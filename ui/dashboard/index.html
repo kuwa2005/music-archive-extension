@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>楽曲制作アーカイブ — 検索</title>
+  <link rel="stylesheet" href="dashboard.css">
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <h1>楽曲制作アーカイブ</h1>
+      <p>Suno・主要AI（ChatGPT / Claude / Gemini 等）の歌詞・曲情報を横断検索</p>
+    </div>
+    <div class="topbar-actions">
+      <button id="export-btn" type="button">エクスポート</button>
+      <label class="file-btn">
+        インポート
+        <input id="import-file" type="file" accept="application/json,.json" hidden>
+      </label>
+      <button id="open-settings-btn" type="button" class="secondary">設定</button>
+    </div>
+  </header>
+
+  <section class="search-panel">
+    <input id="search-input" type="search" placeholder="歌詞の一部、タイトル、AI名、プロンプト…" autofocus>
+    <div class="filters">
+      <select id="filter-source">
+        <option value="">すべてのソース</option>
+        <optgroup label="Suno">
+          <option value="suno_song">曲</option>
+          <option value="suno_workspace">ワークスペース</option>
+          <option value="suno_list">プレイリスト等</option>
+        </optgroup>
+        <optgroup label="AI チャット">
+          <option value="chatgpt">ChatGPT</option>
+          <option value="claude">Claude</option>
+          <option value="gemini">Gemini</option>
+          <option value="copilot">Copilot</option>
+          <option value="perplexity">Perplexity</option>
+          <option value="poe">Poe</option>
+        </optgroup>
+      </select>
+      <input id="filter-gpt" type="text" placeholder="AI名 / GPT名フィルタ">
+      <label><input id="filter-linked" type="checkbox"> リンク済みのみ</label>
+    </div>
+  </section>
+
+  <main class="layout">
+    <section class="results-panel">
+      <h2>検索結果 <span id="result-count"></span></h2>
+      <ul id="result-list"></ul>
+    </section>
+    <aside class="detail-panel">
+      <h2>詳細</h2>
+      <div id="detail-empty">左の結果を選択してください</div>
+      <div id="detail-content" hidden>
+        <h3 id="detail-title"></h3>
+        <p class="meta" id="detail-meta"></p>
+        <pre id="detail-lyrics"></pre>
+        <div class="links-block">
+          <h4>関連 AI チャット</h4>
+          <ul id="linked-chatgpt"></ul>
+          <h4>関連 Suno</h4>
+          <ul id="linked-suno"></ul>
+        </div>
+        <div class="manual-link">
+          <h4>手動リンク</h4>
+          <select id="manual-chatgpt"></select>
+          <select id="manual-suno"></select>
+          <button id="manual-link-btn" type="button">リンク作成</button>
+        </div>
+        <div class="detail-actions">
+          <button id="delete-entry-btn" type="button" class="danger">このエントリを削除</button>
+        </div>
+      </div>
+    </aside>
+  </main>
+
+  <div id="settings-dialog" class="modal" hidden>
+    <div class="modal-backdrop" data-close-settings></div>
+    <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="settings-dialog-title">
+      <header class="modal-header">
+        <h2 id="settings-dialog-title">設定</h2>
+        <button id="settings-close-btn" type="button" class="icon-btn" aria-label="閉じる">×</button>
+      </header>
+      <nav class="settings-tabs" role="tablist" aria-label="設定カテゴリ">
+        <button type="button" class="settings-tab active" role="tab" id="settings-tab-auto-save" data-settings-tab="auto-save" aria-selected="true" aria-controls="settings-panel-auto-save">自動保存</button>
+        <button type="button" class="settings-tab" role="tab" id="settings-tab-auto-link" data-settings-tab="auto-link" aria-selected="false" aria-controls="settings-panel-auto-link">自動リンク</button>
+      </nav>
+      <div class="modal-body">
+        <div id="settings-panel-auto-save" class="settings-panel" role="tabpanel" aria-labelledby="settings-tab-auto-save">
+          <p class="settings-panel-desc">ページを開いたときに自動でアーカイブへ保存します。</p>
+          <label class="settings-check"><input id="setting-auto-suno" type="checkbox"> Suno 曲ページを自動保存</label>
+          <label class="settings-check"><input id="setting-auto-ai" type="checkbox"> AI チャットを自動保存</label>
+          <label class="settings-check"><input id="setting-auto-list" type="checkbox"> Suno リスト（ワークスペース等）を自動保存</label>
+        </div>
+
+        <div id="settings-panel-auto-link" class="settings-panel" role="tabpanel" aria-labelledby="settings-tab-auto-link" hidden>
+          <p class="settings-panel-desc">Suno 曲と AI チャットの歌詞・タイトル類似度で関連付けます。</p>
+          <label class="settings-field">自動リンク閾値
+            <input id="setting-threshold" type="number" min="0.5" max="1" step="0.05">
+          </label>
+          <label class="settings-field">リンク対象日数
+            <input id="setting-window" type="number" min="1" max="365">
+          </label>
+        </div>
+      </div>
+      <footer class="modal-footer">
+        <button id="save-settings-btn" type="button">保存</button>
+        <button id="settings-cancel-btn" type="button" class="secondary">閉じる</button>
+      </footer>
+    </div>
+  </div>
+
+  <script src="../../dist/dashboard.js"></script>
+</body>
+</html>

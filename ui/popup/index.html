@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>楽曲制作アーカイブ</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <header>
+    <h1>楽曲制作アーカイブ</h1>
+    <p id="count-label">読み込み中…</p>
+  </header>
+  <main>
+    <button id="save-current" type="button">現在のページを保存</button>
+    <button id="open-dashboard" type="button" class="secondary">検索ダッシュボード</button>
+  </main>
+  <footer>
+    <label><input type="checkbox" id="auto-suno"> Suno 自動保存</label>
+    <label><input type="checkbox" id="auto-ai"> AI チャット自動保存</label>
+    <label><input type="checkbox" id="auto-list"> リスト自動保存</label>
+  </footer>
+  <script src="../../dist/popup.js"></script>
+</body>
+</html>
