@@ -29,7 +29,7 @@ async function autoCaptureIfEnabled() {
     const autoSave =
       res?.settings?.autoSaveAI ??
       res?.settings?.autoSaveChatGPT ??
-      true;
+      false;
     if (!autoSave) return;
 
     const data = extractCurrentPlatformData();

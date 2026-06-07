@@ -51,10 +51,10 @@
 /** @returns {Settings} */
 export function defaultSettings() {
   return {
-    autoSaveSuno: true,
-    autoSaveAI: true,
-    autoSaveChatGPT: true,
-    autoSaveList: true,
+    autoSaveSuno: false,
+    autoSaveAI: false,
+    autoSaveChatGPT: false,
+    autoSaveList: false,
     linkThreshold: 0.75,
     linkWindowDays: 30,
     gptNameFilter: [],

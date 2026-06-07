@@ -12,7 +12,8 @@ const SETTINGS_KEY = 'settings';
 async function getSettings() {
   const result = await chrome.storage.local.get([SETTINGS_KEY]);
   const raw = result[SETTINGS_KEY] || {};
-  const autoSaveAI = raw.autoSaveAI ?? raw.autoSaveChatGPT ?? true;
+  const defaults = defaultSettings();
+  const autoSaveAI = raw.autoSaveAI ?? raw.autoSaveChatGPT ?? defaults.autoSaveAI;
   return {
     ...defaultSettings(),
     ...raw,
