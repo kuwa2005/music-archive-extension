@@ -6,6 +6,18 @@
 
 ---
 
+## （コミット後にハッシュ追記） — 2026-06-09 — ポップアップフォールバック保存ダイアログのスクロール除去
+
+| 項目 | 内容 |
+|------|------|
+| **種別** | bug |
+| **症状** | タブ中央モーダル失敗時のポップアップ内フォールバックで「お知らせ」「保存しました」が小さく表示され、縦スクロールバーが出る |
+| **原因** | 共有 `modal.css` の `.modal` 余白（24px）と `.modal-panel` の `max-height: 85vh` + `overflow: auto` が約 320px 幅のポップアップビューポートに対して過大。短い 1 行メッセージでもパネル全体がスクロール対象になっていた |
+| **対応内容** | `dialog.css` で `#message-dialog` 専用にパネル `overflow: visible`・各セクションのパディング縮小・長文時のみ body に `overflow-y: auto`。`popup.css` でフォールバック向けにさらにコンパクト化（modal 余白 6px、body の max-height 解除）。`dialog-host-page.css`（タブ中央モーダル）は変更なし。`popup.html` の `#message-dialog` 構造は問題なし |
+| **関連ファイル** | `ui/shared/dialog.css`, `ui/popup/popup.css`, `ui/popup/index.html` |
+
+---
+
 ## fe7809d — 2026-06-09 — 日本語表示の Suno 生成日時を DOM から取得
 
 | 項目 | 内容 |

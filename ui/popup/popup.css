@@ -39,3 +39,47 @@ button.secondary {
   color: var(--color-text);
 }
 button:hover { filter: brightness(1.08); }
+
+/* Popup fallback message dialog — fit ~320px viewport without scroll for short alerts */
+#message-dialog.modal {
+  padding: 6px;
+}
+
+#message-dialog .modal-panel {
+  width: 100%;
+  max-height: none;
+  overflow: visible;
+}
+
+#message-dialog .modal-header {
+  padding: 6px 10px;
+}
+
+#message-dialog .modal-header h2 {
+  font-size: 13px;
+}
+
+#message-dialog .modal-body {
+  padding: 6px 10px;
+  max-height: none;
+  overflow: visible;
+}
+
+#message-dialog .modal-footer {
+  padding: 6px 10px;
+}
+
+#message-dialog .modal-footer button {
+  padding: 6px 12px;
+  font-size: 12px;
+}
+
+#message-dialog .message-dialog-text {
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+#message-dialog .icon-btn {
+  font-size: 18px;
+  padding: 2px 4px;
+}

@@ -4,6 +4,30 @@
   z-index: 1100;
 }
 
+#message-dialog .modal-panel {
+  max-height: none;
+  overflow: visible;
+}
+
+#message-dialog .modal-header {
+  padding: 10px 14px;
+}
+
+#message-dialog .modal-header h2 {
+  font-size: 15px;
+}
+
+#message-dialog .modal-body {
+  padding: 10px 14px;
+  overflow: visible;
+  max-height: min(50vh, 360px);
+  overflow-y: auto;
+}
+
+#message-dialog .modal-footer {
+  padding: 10px 14px;
+}
+
 .message-dialog-text {
   margin: 0;
   white-space: pre-line;
