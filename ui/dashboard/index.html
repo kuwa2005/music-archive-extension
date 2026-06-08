@@ -30,34 +30,35 @@
     </div>
   </header>
 
-  <section class="search-panel">
-    <input id="search-input" type="search" placeholder="歌詞の一部、タイトル、AI名、プロンプト…" autofocus>
-    <div class="filters">
-      <select id="filter-source">
-        <option value="">すべてのソース</option>
-        <optgroup label="Suno">
-          <option value="suno_song">曲</option>
-          <option value="suno_workspace">ワークスペース</option>
-          <option value="suno_list">プレイリスト等</option>
-        </optgroup>
-        <optgroup label="AI チャット">
-          <option value="chatgpt">ChatGPT</option>
-          <option value="claude">Claude</option>
-          <option value="gemini">Gemini</option>
-          <option value="copilot">Copilot</option>
-          <option value="perplexity">Perplexity</option>
-          <option value="poe">Poe</option>
-        </optgroup>
-      </select>
-      <input id="filter-gpt" type="text" placeholder="AI名 / GPT名フィルタ">
-      <label><input id="filter-linked" type="checkbox"> リンク済みのみ</label>
-    </div>
-  </section>
-
   <main class="layout">
     <section class="results-panel">
-      <h2>検索結果 <span id="result-count"></span></h2>
-      <ul id="result-list"></ul>
+      <section class="search-panel">
+        <input id="search-input" type="search" placeholder="歌詞の一部、タイトル、AI名、プロンプト…" autofocus>
+        <div class="filters">
+          <select id="filter-source">
+            <option value="">すべてのソース</option>
+            <optgroup label="Suno">
+              <option value="suno_song">曲</option>
+              <option value="suno_workspace">ワークスペース</option>
+              <option value="suno_list">プレイリスト等</option>
+            </optgroup>
+            <optgroup label="AI チャット">
+              <option value="chatgpt">ChatGPT</option>
+              <option value="claude">Claude</option>
+              <option value="gemini">Gemini</option>
+              <option value="copilot">Copilot</option>
+              <option value="perplexity">Perplexity</option>
+              <option value="poe">Poe</option>
+            </optgroup>
+          </select>
+          <input id="filter-gpt" type="text" placeholder="AI名 / GPT名フィルタ">
+          <label><input id="filter-linked" type="checkbox"> リンク済みのみ</label>
+        </div>
+      </section>
+      <div class="results-body">
+        <h2>検索結果 <span id="result-count"></span></h2>
+        <ul id="result-list"></ul>
+      </div>
     </section>
     <div
       id="layout-resizer"
