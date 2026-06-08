@@ -6,6 +6,33 @@
 
 ---
 
+## 986ff0d — 2026-06-08 — データ整理プレビューの SW 誤検知を根本修正（v1.2.2）
+
+| 項目 | 内容 |
+|------|------|
+| **種別** | bug |
+| **GitHub Issue** | #13 再発 |
+| **概要** | 811dafd 後も「全データ」選択時に「Service Worker が古い状態」と表示される問題を根本修正 |
+| **症状** | 設定 → データ整理 → 全データで「削除対象: 0 件」のまま「プレビュー取得に失敗しました: バックグラウンド（Service Worker）が古い状態です…」 |
+| **原因** | `chrome.runtime.sendMessage` は拡張内の**全** `onMessage` リスナー（開いている Suno / AI タブの content script 含む）に配信され、**最初に `sendResponse` した側だけ**が応答として返る。旧 content script や応答競合で SW の `previewCleanup` 結果が届かず `unknown action` / 空応答になり、ダッシュボードが stale SW と誤判定していた。811dafd は `getExtensionInfo` 事前チェックのみ除去し、配信経路の問題は残っていた |
+| **対応内容** | `sendToBackground`（`_target: 'background'` 付与・リトライ・Port フォールバック）を追加。SW に `dispatchAction` 共通化と `onConnect`（`ma-background`）を追加。content script は `_target === 'background'` を即 `return false`。エラー文言を診断付きに改善。manifest **1.2.2** |
+| **関連ファイル** | `src/lib/extension-messaging.js`, `src/ui/dashboard/dashboard.js`, `src/ui/popup/popup.js`, `src/background/service-worker.js`, `src/content/*.js`, `manifest.json`, `scripts/package-extension.mjs` |
+
+### ユーザー向け：拡張機能の再読み込み手順（v1.2.2 適用）
+
+開発・限定配布とも、**読み込み元はリポジトリ直下の `music-archive-extension/` フォルダ**（`manifest.json` があるディレクトリ）。zip 配布の場合は解凍先をそのまま指定。
+
+1. `chrome://extensions` を開く（「デベロッパー モード」をオン）
+2. 「楽曲制作アーカイブ」の **再読み込み**（↻）をクリック  
+   - バージョンが **1.2.2** になっていることを確認
+3. **開いている Suno / ChatGPT / Claude 等のタブをすべて F5 で更新**（古い content script を破棄するため。省略するとプレビューが再び失敗することがある）
+4. ダッシュボード（オプション画面）を **閉じて開き直す**（古い `dist/dashboard.js` をキャッシュしないため）
+5. 設定 → データ整理 → **全データ** をオンにし、削除対象件数とプレビューが表示されることを確認
+
+開発中にソースを直した場合は、追加で `cd music-archive-extension` → `npm run build` を実行してから手順 2 を繰り返す。
+
+---
+
 ## 1082545 — 2026-06-08 — 配布 zip 用 npm run package スクリプトを追加
 
 | 項目 | 内容 |

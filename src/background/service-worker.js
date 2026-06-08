@@ -71,7 +71,95 @@ async function saveEntryWithLink(data) {
   return { entry, links };
 }
 
-chrome.runtime.onInstalled.addListener(() => {
+/**
+ * @param {Record<string, unknown>} request
+ * @returns {Promise<Record<string, unknown>>}
+ */
+async function dispatchAction(request) {
+  switch (request.action) {
+    case 'ping':
+      return {
+        success: true,
+        pong: true,
+        version: chrome.runtime.getManifest().version,
+        supportsCleanup: true,
+      };
+    case 'getSettings':
+      return { success: true, settings: await getSettings() };
+    case 'saveSettings':
+      await saveSettings(request.settings || {});
+      return { success: true, settings: await getSettings() };
+    case 'saveEntry':
+      return { success: true, ...(await saveEntryWithLink(request.data)) };
+    case 'saveEntries': {
+      await saveEntriesWithLink(request.data || []);
+      return { success: true, count: (request.data || []).length };
+    }
+    case 'search':
+      return { success: true, results: await searchEntries(request.options || {}) };
+    case 'getLinked':
+      return { success: true, ...(await getLinkedEntries(request.entryId)) };
+    case 'createLink':
+      return {
+        success: true,
+        link: await upsertLink({
+          chatgptEntryId: request.chatgptEntryId,
+          sunoEntryId: request.sunoEntryId,
+          linkType: 'manual',
+          score: 1,
+        }),
+      };
+    case 'deleteLink':
+      await deleteLink(request.linkId);
+      return { success: true };
+    case 'deleteEntry':
+      await deleteEntry(request.entryId);
+      return { success: true };
+    case 'getEntry':
+      return { success: true, entry: await getEntry(request.entryId) };
+    case 'exportAll':
+      return { success: true, data: await exportAll() };
+    case 'importAll':
+      return {
+        success: true,
+        ...(await importAll(request.data || {}, request.mode || 'append')),
+      };
+    case 'countEntries':
+      return { success: true, count: await countEntries() };
+    case 'getExtensionInfo':
+      return {
+        success: true,
+        version: chrome.runtime.getManifest().version,
+        supportsCleanup: true,
+      };
+    case 'previewCleanup':
+      return {
+        success: true,
+        ...(await previewCleanup(request.filters || {}, request.limit ?? 8)),
+      };
+    case 'bulkDeleteCleanup': {
+      const deleted = await bulkDeleteByCleanupFilters(request.filters || {});
+      return { success: true, ...deleted };
+    }
+    case 'setEntryProtected':
+      return {
+        success: true,
+        entry: await setEntryProtected(request.entryId, !!request.protected),
+      };
+    default:
+      return { success: false, error: 'unknown action' };
+  }
+}
+
+chrome.runtime.onInstalled.addListener((details) => {
+  if (details.reason === 'update') {
+    console.info(
+      '[music-archive] extension updated to',
+      chrome.runtime.getManifest().version,
+      '— reload open Suno/AI tabs if cleanup preview fails',
+    );
+  }
+
   chrome.contextMenus.create({
     id: 'save-suno-song',
     title: 'この Suno 曲を保存',
@@ -157,89 +245,28 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
 chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
   (async () => {
     try {
-      switch (request.action) {
-        case 'getSettings':
-          sendResponse({ success: true, settings: await getSettings() });
-          break;
-        case 'saveSettings':
-          await saveSettings(request.settings || {});
-          sendResponse({ success: true, settings: await getSettings() });
-          break;
-        case 'saveEntry':
-          sendResponse({ success: true, ...(await saveEntryWithLink(request.data)) });
-          break;
-        case 'saveEntries': {
-          await saveEntriesWithLink(request.data || []);
-          sendResponse({ success: true, count: (request.data || []).length });
-          break;
-        }
-        case 'search':
-          sendResponse({ success: true, results: await searchEntries(request.options || {}) });
-          break;
-        case 'getLinked':
-          sendResponse({ success: true, ...(await getLinkedEntries(request.entryId)) });
-          break;
-        case 'createLink':
-          sendResponse({
-            success: true,
-            link: await upsertLink({
-              chatgptEntryId: request.chatgptEntryId,
-              sunoEntryId: request.sunoEntryId,
-              linkType: 'manual',
-              score: 1,
-            }),
-          });
-          break;
-        case 'deleteLink':
-          await deleteLink(request.linkId);
-          sendResponse({ success: true });
-          break;
-        case 'deleteEntry':
-          await deleteEntry(request.entryId);
-          sendResponse({ success: true });
-          break;
-        case 'getEntry':
-          sendResponse({ success: true, entry: await getEntry(request.entryId) });
-          break;
-        case 'exportAll':
-          sendResponse({ success: true, data: await exportAll() });
-          break;
-        case 'importAll':
-          sendResponse({
-            success: true,
-            ...(await importAll(request.data || {}, request.mode || 'append')),
-          });
-          break;
-        case 'countEntries':
-          sendResponse({ success: true, count: await countEntries() });
-          break;
-        case 'getExtensionInfo':
-          sendResponse({
-            success: true,
-            version: chrome.runtime.getManifest().version,
-            supportsCleanup: true,
-          });
-          break;
-        case 'previewCleanup':
-          sendResponse({ success: true, ...(await previewCleanup(request.filters || {}, request.limit ?? 8)) });
-          break;
-        case 'bulkDeleteCleanup': {
-          const deleted = await bulkDeleteByCleanupFilters(request.filters || {});
-          sendResponse({ success: true, ...deleted });
-          break;
-        }
-        case 'setEntryProtected':
-          sendResponse({
-            success: true,
-            entry: await setEntryProtected(request.entryId, !!request.protected),
-          });
-          break;
-        default:
-          sendResponse({ success: false, error: 'unknown action' });
-      }
+      sendResponse(await dispatchAction(request));
     } catch (err) {
       sendResponse({ success: false, error: String(err) });
     }
   })();
   return true;
+});
+
+chrome.runtime.onConnect.addListener((port) => {
+  if (port.name !== 'ma-background') return;
+  port.onMessage.addListener((request) => {
+    (async () => {
+      try {
+        const result = await dispatchAction(request);
+        port.postMessage({ requestId: request.requestId, ...result });
+      } catch (err) {
+        port.postMessage({
+          requestId: request.requestId,
+          success: false,
+          error: String(err),
+        });
+      }
+    })();
+  });
 });

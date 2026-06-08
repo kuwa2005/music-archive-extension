@@ -61,6 +61,7 @@ async function autoCaptureIfEnabled() {
 }
 
 chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
+  if (request?._target === 'background') return false;
   if (request.action !== 'captureSunoSong') return false;
   (async () => {
     sendResponse({ success: true, data: await extractSunoSongData() });

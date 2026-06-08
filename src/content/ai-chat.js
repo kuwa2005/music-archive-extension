@@ -47,6 +47,7 @@ const mo = new MutationObserver(() => {
 });
 
 chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
+  if (request?._target === 'background') return false;
   if (request.action === 'captureAI' || request.action === 'captureChatGPT') {
     const data = extractCurrentPlatformData();
     if (!data) {

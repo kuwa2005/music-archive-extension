@@ -3,6 +3,7 @@ import { getAiLabel, isAiSource } from '../../lib/ai-sources.js';
 import { getSunoSourceLabel, isSunoEntrySource } from '../../lib/suno-sources.js';
 import { initTheme, bindThemeToggle, watchThemeChanges } from '../../lib/theme.js';
 import { initSplitPane } from '../../lib/split-pane.js';
+import { sendToBackground } from '../../lib/extension-messaging.js';
 
 /** @type {import('../../types.js').Entry[]} */
 let allResults = [];
@@ -10,15 +11,7 @@ let allResults = [];
 let selectedEntry = null;
 
 function send(action, payload = {}) {
-  return new Promise((resolve, reject) => {
-    chrome.runtime.sendMessage({ action, ...payload }, (response) => {
-      if (chrome.runtime.lastError) {
-        reject(new Error(chrome.runtime.lastError.message));
-        return;
-      }
-      resolve(response ?? { success: false, error: 'no response from extension background' });
-    });
-  });
+  return sendToBackground(action, payload);
 }
 
 function debounce(fn, ms) {
@@ -380,13 +373,25 @@ let cleanupPreviewRequestId = 0;
 const scheduleCleanupPreview = debounce(() => refreshCleanupPreview(), 200);
 
 /** @param {string} [detail] */
-function cleanupBackendErrorMessage(detail) {
+async function cleanupBackendErrorMessage(detail) {
   const msg = String(detail || '');
   if (msg === 'unknown action' || msg.includes('no response from extension background')) {
+    let versionHint = '';
+    try {
+      const info = await sendToBackground('getExtensionInfo', {}, { retries: 0 });
+      if (info?.success && info.version) {
+        versionHint = `（バックエンド報告 v${info.version}、データ整理 API: ${
+          info.supportsCleanup ? 'あり' : 'なし'
+        }）`;
+      }
+    } catch {
+      versionHint = '（バックエンドに接続できませんでした）';
+    }
     return [
-      'バックグラウンド（Service Worker）が古い状態です。',
+      `バックグラウンドがデータ整理 API に応答しませんでした。${versionHint}`,
       'chrome://extensions を開き「楽曲制作アーカイブ」の再読み込みを押してください。',
-      '開発中の場合は npm run build 後に再読み込みが必要です。',
+      'Suno / AI チャットのタブを開いている場合は、拡張機能の再読み込み後にそれらのタブも更新（F5）してください。',
+      '開発中の場合は npm run build 後に拡張機能を再読み込みしてください。',
     ].join(' ');
   }
   if (msg.includes('Could not establish connection') || msg.includes('Receiving end does not exist')) {
@@ -434,7 +439,7 @@ async function refreshCleanupPreview() {
   if (res?.success === false) {
     countEl.textContent = '0';
     noteEl.hidden = true;
-    previewEl.innerHTML = `<li class="cleanup-preview-meta cleanup-preview-error">プレビュー取得に失敗しました: ${escapeHtml(cleanupBackendErrorMessage(res.error))}</li>`;
+    previewEl.innerHTML = `<li class="cleanup-preview-meta cleanup-preview-error">プレビュー取得に失敗しました: ${escapeHtml(await cleanupBackendErrorMessage(res.error))}</li>`;
     deleteBtn.disabled = true;
     return;
   }

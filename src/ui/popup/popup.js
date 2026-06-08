@@ -1,9 +1,8 @@
 import { initTheme, bindThemeToggle, watchThemeChanges } from '../../lib/theme.js';
+import { sendToBackground } from '../../lib/extension-messaging.js';
 
 function send(action, payload = {}) {
-  return new Promise((resolve) => {
-    chrome.runtime.sendMessage({ action, ...payload }, resolve);
-  });
+  return sendToBackground(action, payload);
 }
 
 async function refreshCount() {

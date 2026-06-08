@@ -161,6 +161,7 @@ const domObserver = new MutationObserver(() => {
 });
 
 chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
+  if (request?._target === 'background') return false;
   if (request.action === 'captureSunoList') {
     sendResponse({ success: true, data: extractListEntries() });
     return true;

@@ -22,7 +22,7 @@ for (const name of ['dist', 'icons', 'ui', 'manifest.json']) {
 }
 
 const sw = readFileSync(join(stageDir, 'dist', 'service-worker.js'), 'utf8');
-if (!sw.includes('previewCleanup') || !sw.includes('getExtensionInfo')) {
+if (!sw.includes('previewCleanup') || !sw.includes('getExtensionInfo') || !sw.includes('onConnect')) {
   throw new Error('dist/service-worker.js is missing cleanup handlers. Run npm run build first.');
 }
 
