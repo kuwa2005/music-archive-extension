@@ -6,7 +6,19 @@
 
 ---
 
-## bb30e54 — 2026-06-09 — native alert/confirm を CSS モーダルに置換
+## 1e7fc71 — 2026-06-09 — メッセージダイアログを設定モーダルと同一スタイルに統一
+
+| 項目 | 内容 |
+|------|------|
+| **種別** | enhancement |
+| **症状** | showAlert/showConfirm の CSS ダイアログが設定・手動リンクの中央ウィンドウと見た目が微妙に異なり、ポップアップ側は `.popup-page` スコープの重複スタイルだった |
+| **原因** | `dialog.css` に message-dialog 専用の header 上書きと、ポップアップ向けモーダルシェルの重複定義があった |
+| **対応内容** | 設定ダイアログと同じ `.modal` / `.modal-backdrop` / `.modal-panel` / header-body-footer を `ui/shared/modal.css` に集約。`dashboard.css` から重複を除去。message-dialog に × 閉じるボタンを追加し z-index 1100 で最前面表示。ポップアップも同一 modal.css を読み込み画面中央のウィンドウ形式に統一 |
+| **関連ファイル** | `ui/shared/modal.css`, `ui/shared/dialog.css`, `ui/dashboard/dashboard.css`, `ui/dashboard/index.html`, `ui/popup/index.html`, `src/lib/dialog.js` |
+
+---
+
+## f5200dd — 2026-06-09 — native alert/confirm を CSS モーダルに置換
 
 | 項目 | 内容 |
 |------|------|

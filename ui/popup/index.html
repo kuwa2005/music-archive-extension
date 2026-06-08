@@ -6,9 +6,10 @@
   <title>楽曲制作アーカイブ</title>
   <link rel="stylesheet" href="popup.css">
   <link rel="stylesheet" href="../shared/theme.css">
+  <link rel="stylesheet" href="../shared/modal.css">
   <link rel="stylesheet" href="../shared/dialog.css">
 </head>
-<body class="popup-page">
+<body>
   <header>
     <div class="title-row">
       <h1>楽曲制作アーカイブ</h1>
@@ -33,6 +34,7 @@
     <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="message-dialog-title">
       <header class="modal-header">
         <h2 id="message-dialog-title">お知らせ</h2>
+        <button id="message-dialog-close-btn" type="button" class="icon-btn" aria-label="閉じる">×</button>
       </header>
       <div class="modal-body">
         <p id="message-dialog-text" class="message-dialog-text"></p>

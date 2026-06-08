@@ -190,12 +190,16 @@ export function initMessageDialog() {
 
   const okBtn = root.querySelector('#message-dialog-ok');
   const cancelBtn = root.querySelector('#message-dialog-cancel');
+  const closeBtn = root.querySelector('#message-dialog-close-btn');
 
   okBtn?.addEventListener('click', () => {
     closeDialog(currentMode === 'confirm' ? true : undefined);
   });
   cancelBtn?.addEventListener('click', () => {
     closeDialog(false);
+  });
+  closeBtn?.addEventListener('click', () => {
+    closeDialog(currentMode === 'confirm' ? false : undefined);
   });
 
   root.dataset.dialogBound = 'true';
