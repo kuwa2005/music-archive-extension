@@ -331,6 +331,14 @@ function cleanupInput(id) {
   return document.getElementById(id);
 }
 
+/** 全データ・プロテクト削除の危険チェックを既定（オフ）に戻す */
+function resetCleanupDangerChecks() {
+  const presetAll = cleanupInput('cleanup-preset-all');
+  const includeProtected = cleanupInput('cleanup-include-protected');
+  if (presetAll) presetAll.checked = false;
+  if (includeProtected) includeProtected.checked = false;
+}
+
 /** @returns {import('../../lib/cleanup-filter.js').CleanupFilters} */
 function getCleanupFiltersFromUi() {
   return {
@@ -552,6 +560,7 @@ function bindCleanupUi() {
 
     const res = await send('bulkDeleteCleanup', { filters });
     alert(`${res?.deleted ?? 0} 件を削除しました`);
+    resetCleanupDangerChecks();
     if (selectedEntry?.id) {
       const still = await send('getEntry', { entryId: selectedEntry.id });
       if (!still?.entry) {
@@ -600,12 +609,14 @@ function showSettingsTab(tab) {
 }
 
 function openSettingsDialog() {
+  resetCleanupDangerChecks();
   loadSettingsUi();
   showSettingsTab('auto-save');
   document.getElementById('settings-dialog').hidden = false;
 }
 
 function closeSettingsDialog() {
+  resetCleanupDangerChecks();
   document.getElementById('settings-dialog').hidden = true;
 }
 
