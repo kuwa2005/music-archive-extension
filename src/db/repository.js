@@ -2,7 +2,7 @@ import { db } from './schema.js';
 import { isAiSource } from '../lib/ai-sources.js';
 import { isSunoEntrySource } from '../lib/suno-sources.js';
 import { enrichSearchFields } from '../lib/normalize.js';
-import { matchesQuery } from '../lib/similarity.js';
+import { splitSearchQuery, entryMatchesSearchTokens } from '../lib/similarity.js';
 import { filterEntriesForCleanup } from '../lib/cleanup-filter.js';
 
 /**
@@ -92,16 +92,9 @@ export async function searchEntries(opts = {}) {
   if (source) rows = rows.filter((r) => r.source === source);
   if (gptName) rows = rows.filter((r) => (r.gptName || '').includes(gptName));
 
-  const q = query.trim().toLowerCase();
-  if (q) {
-    rows = rows.filter(
-      (r) =>
-        matchesQuery(r.title, q) ||
-        matchesQuery(r.lyrics, q) ||
-        matchesQuery(r.stylePrompt, q) ||
-        matchesQuery(r.gptName, q) ||
-        matchesQuery(r.searchText, q),
-    );
+  const tokens = splitSearchQuery(query);
+  if (tokens.length) {
+    rows = rows.filter((r) => entryMatchesSearchTokens(r, tokens));
   }
 
   if (linkedOnly) {

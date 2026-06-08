@@ -96,3 +96,46 @@ export function matchesQuery(haystack, needle) {
   if (!n) return true;
   return h.includes(n);
 }
+
+/** @type {RegExp} */
+const SEARCH_TOKEN_SPLIT = /[\s\u3000]+/;
+
+/**
+ * 検索クエリを空白（半角・全角）で分割し、空トークンを除く。
+ * @param {string} query
+ * @returns {string[]}
+ */
+export function splitSearchQuery(query) {
+  const trimmed = (query || '').trim();
+  if (!trimmed) return [];
+  return trimmed
+    .split(SEARCH_TOKEN_SPLIT)
+    .map((t) => t.toLowerCase())
+    .filter(Boolean);
+}
+
+/**
+ * @param {import('../types.js').Entry} entry
+ * @param {string} token
+ * @returns {boolean}
+ */
+function entryMatchesToken(entry, token) {
+  return (
+    matchesQuery(entry.title, token) ||
+    matchesQuery(entry.lyrics, token) ||
+    matchesQuery(entry.stylePrompt, token) ||
+    matchesQuery(entry.gptName, token) ||
+    matchesQuery(entry.searchText, token)
+  );
+}
+
+/**
+ * 全トークンがいずれかの検索対象フィールドに含まれるか（トークン間は AND）。
+ * @param {import('../types.js').Entry} entry
+ * @param {string[]} tokens
+ * @returns {boolean}
+ */
+export function entryMatchesSearchTokens(entry, tokens) {
+  if (!tokens.length) return true;
+  return tokens.every((token) => entryMatchesToken(entry, token));
+}

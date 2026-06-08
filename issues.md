@@ -6,6 +6,30 @@
 
 ---
 
+## TBD — 2026-06-08 — 詳細ヘッダーに関連リンクを集約
+
+| 項目 | 内容 |
+|------|------|
+| **種別** | enhancement |
+| **症状** | 詳細パネルの「関連 AI チャット」「関連 Suno」がスクロール本文内に縦に並び、歌詞表示領域を圧迫していた |
+| **原因** | リンクブロックが `.detail-scroll` 内の `links-block` に配置され、ヘッダー（タイトル・メタ）とは別領域だった |
+| **対応内容** | `.detail-header` を新設しタイトル・プロテクト・メタ・関連リンクを固定ヘッダーに集約。リンクはチップ形式（タイトルまたは短縮 URL、ホバーで全文）で横並び折り返し。リンクなし行は非表示、自エントリは除外。スクロール本文は歌詞のみ |
+| **関連ファイル** | `ui/dashboard/index.html`, `ui/dashboard/dashboard.css`, `src/ui/dashboard/dashboard.js`, `dist/dashboard.js` |
+
+---
+
+## ede01c3 — 2026-06-08 — テキスト検索をスペース区切り AND 条件に
+
+| 項目 | 内容 |
+|------|------|
+| **種別** | enhancement |
+| **症状** | 検索欄に「foo bar」のように複数語を入力しても、連続文字列として部分一致するだけで、両方の語が含まれるエントリに絞り込めなかった |
+| **原因** | `searchEntries` がクエリ全体を 1 つの needle として `matchesQuery` に渡していた |
+| **対応内容** | `splitSearchQuery` で半角・全角スペース区切りのトークンに分割。各トークンが title / lyrics / stylePrompt / gptName / searchText のいずれかに含まれることを `entryMatchesSearchTokens` で AND 判定。空クエリ・単一トークンは従来どおり |
+| **関連ファイル** | `src/lib/similarity.js`, `src/db/repository.js`, `dist/service-worker.js` |
+
+---
+
 ## 9da7987 — 2026-06-08 — 詳細パネルのスクロール領域を画面高さいっぱいに
 
 | 項目 | 内容 |
