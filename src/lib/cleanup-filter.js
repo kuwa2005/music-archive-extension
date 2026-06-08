@@ -4,6 +4,7 @@
  * @property {number} [olderThanDays]
  * @property {boolean} [presetUnlinked]
  * @property {boolean} [presetEmptyContent]
+ * @property {boolean} [presetAll]
  * @property {import('../types.js').EntrySource} [source]
  * @property {string} [gptName]
  * @property {'any' | 'linked' | 'unlinked'} [linkStatus]
@@ -52,6 +53,8 @@ export function isUnlinked(entry, linkedIds) {
  * @returns {boolean}
  */
 function matchesPresets(entry, filters, linkedIds) {
+  if (filters.presetAll) return true;
+
   const checks = [];
   if (filters.presetOlderThan) {
     checks.push(isOlderThanDays(entry, filters.olderThanDays ?? 90));

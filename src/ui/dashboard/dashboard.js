@@ -290,6 +290,7 @@ function getCleanupFiltersFromUi() {
     olderThanDays: Number(document.getElementById('cleanup-older-days').value) || 90,
     presetUnlinked: document.getElementById('cleanup-preset-unlinked').checked,
     presetEmptyContent: document.getElementById('cleanup-preset-empty').checked,
+    presetAll: document.getElementById('cleanup-preset-all').checked,
     source: /** @type {import('../../types.js').EntrySource|''} */ (
       document.getElementById('cleanup-source').value
     ) || undefined,
@@ -310,7 +311,8 @@ function getCleanupFiltersFromUi() {
  * @param {import('../../lib/cleanup-filter.js').CleanupFilters} filters
  */
 function hasActiveCleanupCriteria(filters) {
-  if (filters.presetOlderThan || filters.presetUnlinked || filters.presetEmptyContent) return true;
+  if (filters.presetOlderThan || filters.presetUnlinked || filters.presetEmptyContent || filters.presetAll)
+    return true;
   if (filters.source) return true;
   if (filters.keyword) return true;
   if (filters.linkStatus && filters.linkStatus !== 'any') return true;
@@ -342,6 +344,12 @@ async function refreshCleanupPreview() {
   const count = res?.count ?? 0;
   countEl.textContent = String(count);
   noteEl.hidden = !!filters.includeProtected;
+  if (filters.presetAll) {
+    noteEl.hidden = false;
+    noteEl.textContent = '（全データが対象です。プロテクト分は除外設定に従います）';
+  } else if (!filters.includeProtected) {
+    noteEl.textContent = '（プロテクト分は除外されています）';
+  }
   deleteBtn.disabled = count === 0;
 
   previewEl.innerHTML = '';
@@ -374,6 +382,7 @@ function bindCleanupUi() {
     'cleanup-older-days',
     'cleanup-preset-unlinked',
     'cleanup-preset-empty',
+    'cleanup-preset-all',
     'cleanup-source',
     'cleanup-link-status',
     'cleanup-content-status',
@@ -411,6 +420,12 @@ function bindCleanupUi() {
     }
     if (filters.includeProtected && count >= 10) {
       msg += '\n（プロテクト中のデータも含まれます）';
+    }
+    if (filters.presetAll) {
+      msg = `アーカイブの全データ ${count} 件を削除します。この操作は取り消せません。続行しますか？`;
+      if (filters.includeProtected) {
+        msg += '\n（プロテクト中のデータも含まれます）';
+      }
     }
     if (!confirm(msg)) return;
 
