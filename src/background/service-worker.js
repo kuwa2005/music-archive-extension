@@ -90,11 +90,12 @@ async function saveEntryWithLink(data) {
 }
 
 /**
- * 対象タブを前面化して capture し、Suno 曲は sunoCreatedAt を補完してから保存する。
+ * 対象タブから capture し、Suno 曲は sunoCreatedAt を補完してから保存する。
  * @param {number} tabId
+ * @param {{ activateTab?: boolean }} [options] — false: ポップアップ保存向け（タブ前面化しない）
  * @returns {Promise<{ entry?: import('../types.js').Entry, links?: import('../types.js').Link[], count?: number }>}
  */
-async function saveFromTab(tabId) {
+async function saveFromTab(tabId, options = {}) {
   const tab = await chrome.tabs.get(tabId);
   const url = tab.url || '';
   const captureAction = detectCaptureAction(url);
@@ -102,7 +103,7 @@ async function saveFromTab(tabId) {
     throw new Error('unsupported page');
   }
 
-  const response = await captureFromTab(tabId, captureAction);
+  const response = await captureFromTab(tabId, captureAction, options);
   if (!response?.success) {
     throw new Error(response?.error || 'capture failed');
   }
@@ -114,7 +115,7 @@ async function saveFromTab(tabId) {
     return { count: items.length };
   }
 
-  let data = await ensureSunoCreatedAt(tabId, response.data);
+  const data = await ensureSunoCreatedAt(tabId, response.data, options);
   const result = await saveEntryWithLink(data);
   await notifySaveOnTab(tabId, '保存しました');
   return result;
@@ -144,7 +145,9 @@ async function dispatchAction(request) {
       if (!request.tabId) {
         return { success: false, error: 'tabId required' };
       }
-      return { success: true, ...(await saveFromTab(request.tabId)) };
+      // ポップアップ経由は既定でタブ前面化しない（前面化するとポップアップが閉じ応答が届かない）
+      const activateTab = request.activateTab === true;
+      return { success: true, ...(await saveFromTab(request.tabId, { activateTab })) };
     }
     case 'saveEntries': {
       await saveEntriesWithLink(request.data || []);

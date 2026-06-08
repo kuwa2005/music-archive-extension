@@ -55,9 +55,13 @@ document.getElementById('save-current').addEventListener('click', async () => {
     await alertUser(tab.id, 'このページは未対応です');
     return;
   }
-  const res = await send('saveCurrentTab', { tabId: tab.id });
+  const res = await send('saveCurrentTab', { tabId: tab.id, activateTab: false });
   if (!res?.success) {
-    await alertUser(tab.id, '取得に失敗しました。ページを再読み込みしてください');
+    const hint =
+      res?.error === 'content_script_unavailable'
+        ? '取得に失敗しました。ページを再読み込みするか、拡張機能を更新してください'
+        : '取得に失敗しました。ページを再読み込みしてください';
+    await alertUser(tab.id, hint);
     return;
   }
   refreshCount();

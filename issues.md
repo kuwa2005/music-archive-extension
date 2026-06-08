@@ -6,6 +6,20 @@
 
 ---
 
+## 6e131e7 — 2026-06-09 — ポップアップ保存の「取得に失敗しました」修正
+
+| 項目 | 内容 |
+|------|------|
+| **種別** | bug |
+| **症状** | dc47dfd 以降、Suno 曲ページでポップアップ「現在のページを保存」を何度ページ再読み込みしても「取得に失敗しました。ページを再読み込みしてください」 |
+| **原因** | `saveCurrentTab` → `captureFromTab` が**保存のたびに `chrome.tabs.update({ active: true })` で Suno タブを前面化**していた。ポップアップは前面化と同時に**閉じて JS コンテキストが破棄**され、`saveCurrentTab` の `sendResponse` が届かず `success: false`（または `no response`）扱いになる。前面化後に `ensureSunoCreatedAt` でもう一度前面化しており、応答不能と誤表示を悪化させていた。旧フロー（ポップアップから直接 `tabs.sendMessage`）は前面化しないため問題なし |
+| **対応内容** | `captureFromTab` / `ensureSunoCreatedAt` に `activateTab` オプション追加。ポップアップ `saveCurrentTab` は **`activateTab: false`**（前面化せず capture → 日時未取得時は非前面の `getSunoCreatedAt` のみ試行）。右クリック保存は `saveFromTab` 既定 **`activateTab: true`** で DOM 描画を優先。`tabs.sendMessage` の接続エラーを捕捉し `content_script_unavailable` を返す。`ensureSunoCreatedAt` 失敗は従来どおり保存全体を止めない |
+| **関連ファイル** | `src/lib/capture-tab.js`, `src/background/service-worker.js`, `src/ui/popup/popup.js`, `dist/*` |
+
+**確認:** manifest の `content_scripts` は `https://suno.com/song/*` / `https://*.suno.com/song/*` に `dist/suno-song.js` を `document_idle` で注入。action 名 `captureSunoSong` / `getSunoCreatedAt` は content script と一致 |
+
+---
+
 ## dc47dfd — 2026-06-09 — sunoCreatedAt: 保存フロー統合とバックグラウンドタブ対策
 
 | 項目 | 内容 |
