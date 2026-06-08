@@ -11,6 +11,19 @@ import {
   JAPANESE_DATETIME_RE,
 } from '../src/lib/suno-selectors.js';
 
+const SONG_FIXTURE_TEXT_SM = `
+<main>
+  <section data-testid="song-page">
+    <h1>Test Song</h1>
+    <div class="flex items-center gap-2 mt-2">
+      <span class="text-sm text-foreground-secondary" title="2026年5月10日 12:10">2026年5月10日 12:10</span>
+      <span class="rounded px-2 text-xs bg-pink-500">Custom</span>
+    </div>
+    <button title="Add to Playlist">Add</button>
+  </section>
+</main>
+`;
+
 const SONG_FIXTURE_P = `
 <main>
   <section data-testid="song-page">
@@ -66,9 +79,10 @@ function runFixture(label, html) {
   assert(fromDoc === parsed, `${label}: extractSunoCreatedAtFromDom (${fromDoc})`);
 }
 
-// DOM フィクスチャ（p / div）
+// DOM フィクスチャ（p / div / text-sm）
 runFixture('p element', SONG_FIXTURE_P);
 runFixture('div element', SONG_FIXTURE_DIV);
+runFixture('text-sm span (2026 UI)', SONG_FIXTURE_TEXT_SM);
 
 // 歌詞タブ相当で日時要素が消えた場合の innerText フォールバック
 const { document: docAfterTab } = parseHTML(SONG_FIXTURE_DIV);
@@ -93,6 +107,17 @@ if (existsSync(fixturePath)) {
   const { document: fixtureDoc } = parseHTML(html);
   const fromFixtureDoc = extractSunoCreatedAtFromDom(fixtureDoc, clipId);
   assert(fromFixtureDoc === expected, `fixture extractSunoCreatedAtFromDom → ${fromFixtureDoc}`);
+}
+
+const textSmFixturePath = new URL('../fixtures/song-a4ed4df5-text-sm.html', import.meta.url).pathname.replace(
+  /^\/([A-Z]:)/,
+  '$1',
+);
+if (existsSync(textSmFixturePath)) {
+  const html = readFileSync(textSmFixturePath, 'utf8');
+  const { document: textSmDoc } = parseHTML(html);
+  const fromTextSm = extractSunoCreatedAtFromDom(textSmDoc);
+  assert(fromTextSm === parsed, `text-sm fixture extractSunoCreatedAtFromDom → ${fromTextSm}`);
 }
 
 if (process.exitCode) {

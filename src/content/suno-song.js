@@ -6,6 +6,7 @@ import {
   extractStyleFromRoot,
   clickLyricsTab,
   sleep,
+  waitForSunoCreatedAt,
   extractSunoCreatedAtFromDom,
   fetchSunoClipCreatedAt,
 } from '../lib/suno-selectors.js';
@@ -19,7 +20,7 @@ async function extractSunoSongData() {
   const clipId = parseClipIdFromUrl(sourceUrl);
 
   // 歌詞タブ切替でヒーロー付近の日時 DOM が消えることがあるため、先に取得する
-  let sunoCreatedAt = extractSunoCreatedAtFromDom(document, clipId);
+  let sunoCreatedAt = await waitForSunoCreatedAt(document, clipId);
   if (!sunoCreatedAt && clipId) {
     sunoCreatedAt = await fetchSunoClipCreatedAt(clipId);
   }

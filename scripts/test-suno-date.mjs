@@ -95,11 +95,12 @@ async function main() {
   console.log('\n=== Script created_at ===', scriptHits.slice(0, 5));
 
   const expected = '2026-05-10T03:10:49.430Z';
-  if (fromDoc !== expected) {
-    console.error('\nFAIL: expected', expected, 'got', fromDoc);
+  const expectedJaDom = parseJapaneseDateTimeToIso('2026年5月10日 12:10');
+  if (fromDoc !== expected && fromDoc !== expectedJaDom) {
+    console.error('\nFAIL: expected', expected, 'or', expectedJaDom, 'got', fromDoc);
     process.exitCode = 1;
   } else {
-    console.log('\nOK: fixture extraction matches embedded created_at');
+    console.log('\nOK: fixture extraction matches embedded created_at or JA DOM date');
   }
 
   console.log('\n=== API fallback ===');
@@ -109,6 +110,21 @@ async function main() {
   const sample = '2026年5月10日 12:10';
   console.log('\n=== Parser sanity ===');
   console.log(sample, '→', parseJapaneseDateTimeToIso(sample));
+
+  const textSmPath = new URL('../fixtures/song-a4ed4df5-text-sm.html', import.meta.url).pathname.replace(
+    /^\/([A-Z]:)/,
+    '$1',
+  );
+  if (existsSync(textSmPath)) {
+    const { document: textSmDoc } = parseHTML(readFileSync(textSmPath, 'utf8'));
+    const fromTextSm = extractSunoCreatedAtFromDom(textSmDoc);
+    console.log('\n=== text-sm live DOM fixture ===');
+    console.log('extractSunoCreatedAtFromDom:', fromTextSm);
+    if (fromTextSm !== expectedJaDom) {
+      console.error('FAIL text-sm fixture: expected', expectedJaDom, 'got', fromTextSm);
+      process.exitCode = 1;
+    }
+  }
 }
 
 main().catch((e) => {

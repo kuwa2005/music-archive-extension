@@ -6,6 +6,20 @@
 
 ---
 
+## （コミット後にハッシュ追記） — 2026-06-09 — sunoCreatedAt: text-sm DOM と __next_f 対応
+
+| 項目 | 内容 |
+|------|------|
+| **種別** | bug |
+| **症状** | d9f9565 後も Suno 曲ページ（例: a4ed4df5…）保存時に `sunoCreatedAt` が DB に入らない。ページには Custom 付近に「2026年5月10日 12:10」が表示される |
+| **原因** | (1) 2026 UI の生成日時は `span.text-sm.text-foreground-secondary[title="2026年5月10日 12:10"]` で描画され、従来セレクタは `text-xs` 中心。(2) Custom バッジと日時が同一 flex 行に無く、兄弟行探索が不十分。(3) ハイドレーション前に保存すると DOM 日時未描画のタイミングがあり、即時 1 回抽出では空になることがある。(4) `window.__next_f` 配列の RSC ペイロードを直接参照していなかった |
+| **対応内容** | `SUNO_JA_DATE_SELECTORS` に text-sm / title 属性セレクタを最優先追加。Custom バッジから親を最大 6 段たどって日時を探索。`extractCreatedAtFromPageState` で `__next_f` を走査。`waitForSunoCreatedAt`（最大 3 秒ポーリング）を `suno-song.js` の歌詞タブ切替前に適用。実 DOM フィクスチャ `fixtures/song-a4ed4df5-text-sm.html` とテスト拡充。ポップアップは従来どおり `captureSunoSong` → `saveEntry` の順 |
+| **関連ファイル** | `src/lib/suno-selectors.js`, `src/content/suno-song.js`, `fixtures/song-a4ed4df5-text-sm.html`, `scripts/test-suno-date.mjs`, `scripts/_tmp-parse-song-date.mjs`, `dist/suno-song.js` |
+
+**動作確認用 DOM セレクタ:** `span.text-sm.text-foreground-secondary[title*="年"]`（実ページ: `title="2026年5月10日 12:10"`）
+
+---
+
 ## 1a91aff — 2026-06-09 — 詳細パネルタイトルを sourceUrl へリンク
 
 | 項目 | 内容 |

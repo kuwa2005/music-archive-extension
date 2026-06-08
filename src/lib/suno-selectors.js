@@ -31,6 +31,25 @@ const RELATIVE_AGO_RE = /\bago\b/i;
 /** 日本語ロケールの絶対日時（例: 2026年5月10日 12:10） */
 export const JAPANESE_DATETIME_RE = /(\d{4})年(\d{1,2})月(\d{1,2})日\s*(\d{1,2}):(\d{2})/;
 
+/** 2026 UI: Custom 付近の生成日時（text-sm / title 属性が最も安定） */
+export const SUNO_JA_DATE_SELECTORS = [
+  'span.text-sm.text-foreground-secondary[title*="年"]',
+  'span[class*="text-sm"][class*="foreground-secondary"][title*="年"]',
+  'p.text-sm.text-foreground-secondary[title*="年"]',
+  'div.text-sm.text-foreground-secondary[title*="年"]',
+  'span.text-sm.text-foreground-secondary',
+  'span[class*="text-sm"][class*="foreground-secondary"]',
+  'p.text-xs.text-foreground-secondary[title*="年"]',
+  'span.text-xs.text-foreground-secondary[title*="年"]',
+  'p.text-xs.text-foreground-secondary',
+  'span.text-xs.text-foreground-secondary',
+  'span.text-foreground-secondary[title*="年"]',
+  'p.text-foreground-secondary[title*="年"]',
+  'span.text-foreground-secondary',
+  'p.text-foreground-secondary',
+  'div.text-foreground-secondary',
+];
+
 const SUNO_CLIP_API = 'https://studio-api.prod.suno.com/api/clips';
 
 /** RSC / 埋め込み JSON の created_at（プレーン・エスケープ両方） */
@@ -196,8 +215,28 @@ export function findSongHeroRoot(doc) {
  * @param {Element} root
  * @returns {string|null} ISO 8601
  */
+/**
+ * @param {Element} el
+ * @returns {string|null}
+ */
+function parseDateFromElement(el) {
+  if (!el) return null;
+  const titleParsed = parseJapaneseDateTimeToIso(el.getAttribute('title') || '');
+  if (titleParsed) return titleParsed;
+  const text = (el.textContent || '').normalize('NFKC').replace(/\u00a0/g, ' ').trim();
+  if (!text || text.length > 40) return null;
+  return parseJapaneseDateTimeToIso(text);
+}
+
 export function extractDateFromScope(root) {
   if (!root) return null;
+
+  for (const sel of SUNO_JA_DATE_SELECTORS) {
+    for (const el of root.querySelectorAll(sel)) {
+      const parsed = parseDateFromElement(el);
+      if (parsed) return parsed;
+    }
+  }
 
   const fromTextNodes = extractJapaneseDateFromTextNodes(root);
   if (fromTextNodes) return fromTextNodes;
@@ -254,16 +293,16 @@ export function extractDateFromScope(root) {
   for (const badge of root.querySelectorAll('span, p, div')) {
     const badgeText = (badge.textContent || '').trim();
     if (badgeText !== 'Custom' && !/^Custom$/i.test(badgeText)) continue;
-    const row =
+    let container =
       badge.closest('[class*="flex"]') ||
       badge.parentElement?.parentElement ||
       badge.parentElement;
-    if (!row) continue;
-    for (const el of row.querySelectorAll('span, p, div, time')) {
-      const text = (el.textContent || '').trim();
-      if (!text || text.length > 40) continue;
-      const parsed = parseJapaneseDateTimeToIso(text);
-      if (parsed) return parsed;
+    for (let depth = 0; depth < 6 && container; depth += 1) {
+      for (const el of container.querySelectorAll('span, p, div, time')) {
+        const parsed = parseDateFromElement(el);
+        if (parsed) return parsed;
+      }
+      container = container.parentElement;
     }
   }
 
@@ -305,8 +344,23 @@ export function extractDateFromScope(root) {
  * @returns {string|null} ISO 8601
  */
 export function extractCreatedAtFromPageState(doc, clipId) {
+  try {
+    const view = doc.defaultView;
+    if (view?.__next_f && Array.isArray(view.__next_f)) {
+      const chunkText = view.__next_f
+        .map((chunk) => (typeof chunk === 'string' ? chunk : JSON.stringify(chunk)))
+        .join('\n');
+      const fromNextF = extractCreatedAtFromText(chunkText, clipId);
+      if (fromNextF) return fromNextF;
+    }
+  } catch {
+    /* ignore */
+  }
+
   for (const script of doc.querySelectorAll('script')) {
-    const fromScript = extractCreatedAtFromText(script.textContent || '', clipId);
+    const text = script.textContent || '';
+    if (!text.includes('created_at') && !text.includes('__next_f')) continue;
+    const fromScript = extractCreatedAtFromText(text, clipId);
     if (fromScript) return fromScript;
   }
 
@@ -339,6 +393,23 @@ export function extractSunoCreatedAtFromDom(doc, clipId) {
   }
 
   return extractCreatedAtFromPageState(doc, clipId);
+}
+
+/**
+ * ハイドレーション前後のタイミング差を吸収して生成日時を取得する。
+ * @param {Document} doc
+ * @param {string} [clipId]
+ * @param {{ attempts?: number, intervalMs?: number }} [options]
+ * @returns {Promise<string|null>} ISO 8601
+ */
+export async function waitForSunoCreatedAt(doc, clipId, options = {}) {
+  const { attempts = 20, intervalMs = 150 } = options;
+  for (let i = 0; i < attempts; i += 1) {
+    const found = extractSunoCreatedAtFromDom(doc, clipId);
+    if (found) return found;
+    if (i < attempts - 1) await sleep(intervalMs);
+  }
+  return null;
 }
 
 /**
