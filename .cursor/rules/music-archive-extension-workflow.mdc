@@ -1,0 +1,32 @@
+---
+description: music-archive-extension の修正記録・コミット・push 運用
+globs: music-archive-extension/**
+alwaysApply: false
+---
+
+# music-archive-extension 開発ワークフロー
+
+作業ディレクトリ: **`music-archive-extension/`**（ユーザーが別パスを指定しない限りここで作業）。
+
+## 修正後の必須手順
+
+1. **`issues.md` を更新**（リポジトリ直下 `music-archive-extension/issues.md`）
+   - **1 コミット = 1 セクション**（新しい順）。1 コミットに複数件ある場合は小見出しで区切る
+   - 各セクションに含める項目: **種別**（bug / enhancement）、**症状**、**原因**、**対応内容**、関連ファイル
+   - コミット後に **コミットハッシュ** を見出しに追記（例: `## abc1234 — 2026-06-08 — …`）
+   - 該当する **GitHub Issue #** があれば記載
+
+2. **ローカル git コミット**（必須）
+   - コミットメッセージは **日本語**
+   - **1 論理単位 = 1 コミット**（issues.md 更新とコード変更を同一コミットに含めてよい）
+   - `src/` や JS ビルド対象を変更した場合は、コミット前に **`npm run build`** を実行し `dist/` も整合させる
+
+3. **GitHub への push は毎回不要**
+   - ユーザーが明示指示したとき、または区切り（複数修正のまとめ・リリース前など）の **マイルストーン** のときのみ push
+   - push 前に `git status` / `git log` でローカル先行コミット数を確認
+
+## 参照
+
+- 不具合・改善の履歴: `music-archive-extension/issues.md`
+- 配布 zip: `npm run package` → `release/music-archive-extension-v*.zip`
+- ワークスペース全体: リポジトリ直下 `AGENTS.md`（親）または本リポジトリの `README.md`

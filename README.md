@@ -44,6 +44,13 @@ npm run watch
 
 `src/` を編集後、Chrome の拡張機能ページで「更新」を押してください。
 
+### 開発運用
+
+- 不具合修正・機能改善は **`issues.md`** にコミット単位で記録する（種別・症状・原因・対応・GitHub Issue #）
+- 変更後は **ローカル git コミット**（日本語メッセージ）。`src/` 変更時はコミット前に `npm run build`
+- GitHub への push は区切りがついたタイミングでまとめて行う（毎回 push 不要）
+- 詳細ルール: ワークスペース `.cursor/rules/music-archive-extension-workflow.mdc`
+
 ## データ
 
 - 保存先: ブラウザ内 IndexedDB (`MusicArchiveDB`)
