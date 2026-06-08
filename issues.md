@@ -6,6 +6,18 @@
 
 ---
 
+## （未コミット）— 2026-06-09 — sunoCreatedAt: RSC 埋め込み JSON からの抽出
+
+| 項目 | 内容 |
+|------|------|
+| **種別** | bug |
+| **症状** | c1a694e 後も「映らないものを流して」等で生成日時が未取得。ページには Custom 付近に「2026年5月10日 12:10」が見えるが DB に `sunoCreatedAt` が入らない |
+| **原因** | (1) Suno 2026 UI は日本語日時をクライアント描画のみで SSR HTML に含めない。(2) 生成日時は `self.__next_f.push` の RSC ペイロードに `\"created_at\":\"…\"` とエスケープされており、従来の `"created_at":"…"` 正規表現が 0 件。(3) `GET studio-api.prod.suno.com/api/clips/{id}` は未認証で 404（Cookie 必須）。(4) SSR 段階では `main`/`h1`/`Add to Playlist` が無くヒーロースコープも空 |
+| **対応内容** | `extractCreatedAtFromText` でエスケープ JSON と clipId 近傍を解析。`extractCreatedAtFromPageState` を追加し script / document HTML を走査。ヒーロー探索を `climbAncestors` で拡張、テキストノード TreeWalker で日本語日時を検出。`extractSunoCreatedAtFromDom(doc, clipId)` に clipId 連携。実ページ SSR フィクスチャ `fixtures/song-a4ed4df5.html` と `scripts/test-suno-date.mjs` を追加。`upsertEntry` は抽出済み ISO 文字列を明示保存 |
+| **関連ファイル** | `src/lib/suno-selectors.js`, `src/content/suno-song.js`, `src/db/repository.js`, `fixtures/song-a4ed4df5.html`, `scripts/test-suno-date.mjs`, `scripts/_tmp-parse-song-date.mjs`, `package.json`, `dist/suno-song.js`, `dist/service-worker.js` |
+
+---
+
 ## c1a694e — 2026-06-09 — sunoCreatedAt 再保存時の補完と DOM 抽出強化
 
 | 項目 | 内容 |

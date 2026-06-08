@@ -2,10 +2,12 @@
  * Suno 曲ページの日本語日時抽出の簡易検証（node scripts/_tmp-parse-song-date.mjs）
  */
 import { parseHTML } from 'linkedom';
+import { readFileSync, existsSync } from 'fs';
 import {
   parseJapaneseDateTimeToIso,
   extractDateFromScope,
   extractSunoCreatedAtFromDom,
+  extractCreatedAtFromText,
   JAPANESE_DATETIME_RE,
 } from '../src/lib/suno-selectors.js';
 
@@ -76,6 +78,22 @@ assert(
   extractDateFromScope(heroAfterTab) === null,
   'date element removed: no false positive from scope',
 );
+
+// 実ページ SSR フィクスチャ（RSC エスケープ JSON）
+const fixturePath = new URL('../fixtures/song-a4ed4df5.html', import.meta.url).pathname.replace(
+  /^\/([A-Z]:)/,
+  '$1',
+);
+if (existsSync(fixturePath)) {
+  const html = readFileSync(fixturePath, 'utf8');
+  const clipId = 'a4ed4df5-16b1-41e4-88f4-df0f14996aec';
+  const expected = '2026-05-10T03:10:49.430Z';
+  const fromEscaped = extractCreatedAtFromText(html, clipId);
+  assert(fromEscaped === expected, `fixture escaped created_at → ${fromEscaped}`);
+  const { document: fixtureDoc } = parseHTML(html);
+  const fromFixtureDoc = extractSunoCreatedAtFromDom(fixtureDoc, clipId);
+  assert(fromFixtureDoc === expected, `fixture extractSunoCreatedAtFromDom → ${fromFixtureDoc}`);
+}
 
 if (process.exitCode) {
   console.error('\nSome checks failed.');

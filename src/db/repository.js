@@ -48,7 +48,10 @@ export async function upsertEntry(data) {
     imageUrl: data.imageUrl ?? existing?.imageUrl,
     protected: data.protected ?? existing?.protected ?? false,
     capturedAt: existing?.capturedAt || data.capturedAt || now,
-    sunoCreatedAt: data.sunoCreatedAt || existing?.sunoCreatedAt,
+    sunoCreatedAt:
+      typeof data.sunoCreatedAt === 'string' && data.sunoCreatedAt
+        ? data.sunoCreatedAt
+        : existing?.sunoCreatedAt,
     updatedAt: now,
     ...searchFields,
   };

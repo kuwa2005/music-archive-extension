@@ -19,7 +19,7 @@ async function extractSunoSongData() {
   const clipId = parseClipIdFromUrl(sourceUrl);
 
   // 歌詞タブ切替でヒーロー付近の日時 DOM が消えることがあるため、先に取得する
-  let sunoCreatedAt = extractSunoCreatedAtFromDom(document);
+  let sunoCreatedAt = extractSunoCreatedAtFromDom(document, clipId);
   if (!sunoCreatedAt && clipId) {
     sunoCreatedAt = await fetchSunoClipCreatedAt(clipId);
   }
@@ -47,7 +47,7 @@ async function extractSunoSongData() {
   }
 
   if (!sunoCreatedAt) {
-    sunoCreatedAt = extractSunoCreatedAtFromDom(document);
+    sunoCreatedAt = extractSunoCreatedAtFromDom(document, clipId);
     if (!sunoCreatedAt && clipId) {
       sunoCreatedAt = await fetchSunoClipCreatedAt(clipId);
     }

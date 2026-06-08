@@ -33,6 +33,87 @@ export const JAPANESE_DATETIME_RE = /(\d{4})年(\d{1,2})月(\d{1,2})日\s*(\d{1,
 
 const SUNO_CLIP_API = 'https://studio-api.prod.suno.com/api/clips';
 
+/** RSC / 埋め込み JSON の created_at（プレーン・エスケープ両方） */
+const CREATED_AT_JSON_RES = [
+  /"created_at"\s*:\s*"([^"]+)"/g,
+  /\\"created_at\\":\\"([^"\\]+)\\"/g,
+];
+
+/**
+ * @param {Element|null} el
+ * @param {number} [maxSteps]
+ * @returns {Element|null}
+ */
+function climbAncestors(el, maxSteps = 8) {
+  let node = el;
+  for (let i = 0; i < maxSteps && node; i += 1) {
+    node = node.parentElement;
+    if (!node) break;
+    const tag = node.tagName;
+    if (
+      tag === 'MAIN' ||
+      tag === 'ARTICLE' ||
+      tag === 'SECTION' ||
+      node.getAttribute('role') === 'main' ||
+      node.dataset?.testid === 'song-page'
+    ) {
+      return node;
+    }
+  }
+  let fallback = el;
+  for (let i = 0; i < 6 && fallback?.parentElement; i += 1) {
+    fallback = fallback.parentElement;
+  }
+  return fallback;
+}
+
+/**
+ * @param {string} text
+ * @param {string} [clipId]
+ * @returns {string|null} ISO 8601
+ */
+export function extractCreatedAtFromText(text, clipId) {
+  if (!text || !text.includes('created_at')) return null;
+
+  /** @type {string[]} */
+  const regions = [];
+  if (clipId && text.includes(clipId)) {
+    const idx = text.indexOf(clipId);
+    regions.push(text.slice(Math.max(0, idx - 1500), idx + 1500));
+  }
+  regions.push(text);
+
+  for (const region of regions) {
+    for (const re of CREATED_AT_JSON_RES) {
+      const matches = [...region.matchAll(re)];
+      for (const match of matches) {
+        const raw = match[1];
+        const d = new Date(raw);
+        if (!Number.isNaN(d.getTime())) return d.toISOString();
+      }
+    }
+  }
+  return null;
+}
+
+/**
+ * @param {Element} root
+ * @returns {string|null} ISO 8601
+ */
+function extractJapaneseDateFromTextNodes(root) {
+  if (!root) return null;
+  const doc = root.ownerDocument || root;
+  const walker = doc.createTreeWalker(root, 4 /* NodeFilter.SHOW_TEXT */);
+  let node;
+  while ((node = walker.nextNode())) {
+    const text = (node.textContent || '').normalize('NFKC').replace(/\u00a0/g, ' ').trim();
+    if (!text || text.length > 60) continue;
+    const parsed = parseJapaneseDateTimeToIso(text);
+    if (parsed) return parsed;
+  }
+  return null;
+}
+
 /**
  * @param {string} [title]
  * @returns {string|null} ISO 8601
@@ -91,19 +172,24 @@ export function findSongHeroRoot(doc) {
   const addBtn = doc.querySelector('button[title="Add to Playlist"]');
   if (addBtn) {
     return (
+      addBtn.closest('[data-testid="song-page"]') ||
       addBtn.closest('main') ||
       addBtn.closest('article') ||
       addBtn.closest('section') ||
-      addBtn.closest('[data-testid="song-page"]') ||
-      addBtn.parentElement?.parentElement?.parentElement ||
-      null
+      climbAncestors(addBtn, 10)
     );
   }
   const h1 = doc.querySelector('h1, [data-testid="song-title"]');
   if (h1) {
-    return h1.closest('main') || h1.closest('article') || h1.parentElement?.parentElement || null;
+    return (
+      h1.closest('[data-testid="song-page"]') ||
+      h1.closest('main') ||
+      h1.closest('article') ||
+      h1.closest('section') ||
+      climbAncestors(h1, 8)
+    );
   }
-  return doc.querySelector('main, [role="main"]');
+  return doc.querySelector('[data-testid="song-page"], main, [role="main"]');
 }
 
 /**
@@ -112,6 +198,9 @@ export function findSongHeroRoot(doc) {
  */
 export function extractDateFromScope(root) {
   if (!root) return null;
+
+  const fromTextNodes = extractJapaneseDateFromTextNodes(root);
+  if (fromTextNodes) return fromTextNodes;
 
   for (const timeEl of root.querySelectorAll('time[datetime]')) {
     const iso = timeEl.getAttribute('datetime');
@@ -211,29 +300,34 @@ export function extractDateFromScope(root) {
 }
 
 /**
- * @param {string} text
+ * @param {Document} doc
+ * @param {string} [clipId]
  * @returns {string|null} ISO 8601
  */
-export function extractCreatedAtFromText(text) {
-  if (!text) return null;
-  const m = text.match(/"created_at"\s*:\s*"([^"]+)"/);
-  if (!m) return null;
-  const d = new Date(m[1]);
-  if (Number.isNaN(d.getTime())) return null;
-  return d.toISOString();
+export function extractCreatedAtFromPageState(doc, clipId) {
+  for (const script of doc.querySelectorAll('script')) {
+    const fromScript = extractCreatedAtFromText(script.textContent || '', clipId);
+    if (fromScript) return fromScript;
+  }
+
+  const html = doc.documentElement?.innerHTML || doc.body?.innerHTML || '';
+  return extractCreatedAtFromText(html, clipId);
 }
 
 /**
  * DOM から Suno 曲の生成日時を抽出する。
  * 曲ページのヒーロー付近 → main → ページ内 JSON の順。取得不可時は null。
  * @param {Document} doc
+ * @param {string} [clipId]
  * @returns {string|null} ISO 8601
  */
-export function extractSunoCreatedAtFromDom(doc) {
+export function extractSunoCreatedAtFromDom(doc, clipId) {
   const scopes = [
     findSongHeroRoot(doc),
+    doc.querySelector('[data-testid="song-page"]'),
     doc.querySelector('main'),
     doc.querySelector('[role="main"]'),
+    doc.body,
   ].filter(Boolean);
 
   const seen = new Set();
@@ -244,12 +338,7 @@ export function extractSunoCreatedAtFromDom(doc) {
     if (found) return found;
   }
 
-  for (const script of doc.querySelectorAll('script')) {
-    const fromScript = extractCreatedAtFromText(script.textContent || '');
-    if (fromScript) return fromScript;
-  }
-
-  return extractCreatedAtFromText(doc.body?.innerHTML || '');
+  return extractCreatedAtFromPageState(doc, clipId);
 }
 
 /**
