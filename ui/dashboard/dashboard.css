@@ -384,6 +384,13 @@ button.protect-btn {
 .cleanup-preview .cleanup-preview-meta {
   color: var(--color-text-muted);
 }
+.cleanup-preview-error {
+  color: #f87171;
+  line-height: 1.5;
+}
+[data-theme='light'] .cleanup-preview-error {
+  color: #dc2626;
+}
 .cleanup-hint {
   font-size: 12px;
   color: var(--color-text-muted);
@@ -479,6 +486,24 @@ button.linkish {
   background: var(--color-input-bg);
   color: var(--color-text);
   width: 140px;
+}
+.import-mode-fieldset {
+  margin: 0 0 14px;
+  padding: 12px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+}
+.import-mode-fieldset legend {
+  padding: 0 6px;
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+.import-mode-fieldset .settings-check {
+  display: block;
+  margin-bottom: 8px;
+}
+.import-mode-fieldset .settings-check:last-child {
+  margin-bottom: 0;
 }
 .settings-data-actions {
   display: flex;

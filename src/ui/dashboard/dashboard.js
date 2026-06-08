@@ -10,9 +10,23 @@ let allResults = [];
 let selectedEntry = null;
 
 function send(action, payload = {}) {
-  return new Promise((resolve) => {
-    chrome.runtime.sendMessage({ action, ...payload }, resolve);
+  return new Promise((resolve, reject) => {
+    chrome.runtime.sendMessage({ action, ...payload }, (response) => {
+      if (chrome.runtime.lastError) {
+        reject(new Error(chrome.runtime.lastError.message));
+        return;
+      }
+      resolve(response ?? { success: false, error: 'no response from extension background' });
+    });
   });
+}
+
+function debounce(fn, ms) {
+  let t;
+  return (...args) => {
+    clearTimeout(t);
+    t = setTimeout(() => fn(...args), ms);
+  };
 }
 
 function sourceLabel(source) {
@@ -264,11 +278,42 @@ document.getElementById('export-btn').addEventListener('click', async () => {
   URL.revokeObjectURL(url);
 });
 
-async function importJsonFile(file, handler) {
+/** @returns {'append' | 'replace_except_protected'} */
+function getImportMode() {
+  const replace = document.getElementById('import-mode-replace');
+  return replace?.checked ? 'replace_except_protected' : 'append';
+}
+
+/**
+ * @param {{ entries?: number, links?: number, cleared?: { entries: number, links: number, keptProtected: number } }} res
+ * @param {'append' | 'replace_except_protected'} mode
+ */
+function formatImportResult(res, mode) {
+  const lines = [`取り込み: エントリ ${res.entries ?? 0} 件、リンク ${res.links ?? 0} 件`];
+  if (mode === 'replace_except_protected' && res.cleared) {
+    lines.unshift(
+      `削除: エントリ ${res.cleared.entries} 件、リンク ${res.cleared.links} 件（プロテクト ${res.cleared.keptProtected} 件は保持）`,
+    );
+  }
+  return lines.join('\n');
+}
+
+async function importJsonFile(file, mode) {
+  if (mode === 'replace_except_protected') {
+    const ok = confirm(
+      '既存データを削除してからインポートします。\nプロテクト中のデータのみ残ります。\n\n続行しますか？',
+    );
+    if (!ok) return;
+  }
+
   const text = await file.text();
   const data = JSON.parse(text);
-  const res = await handler(data);
-  alert(`インポート完了: ${JSON.stringify(res)}`);
+  const res = await send('importAll', { data, mode });
+  if (res?.success === false) {
+    alert(`インポートに失敗しました: ${res.error || '不明なエラー'}`);
+    return;
+  }
+  alert(`インポート完了\n${formatImportResult(res, mode)}`);
   runSearch();
   refreshCleanupPreview();
 }
@@ -276,34 +321,44 @@ async function importJsonFile(file, handler) {
 document.getElementById('import-file').addEventListener('change', async (e) => {
   const file = e.target.files?.[0];
   if (!file) return;
-  await importJsonFile(file, (data) => send('importAll', { data }));
+  const mode = getImportMode();
+  try {
+    await importJsonFile(file, mode);
+  } catch (err) {
+    alert(`インポートに失敗しました: ${err}`);
+  }
   e.target.value = '';
 });
 
 /** @type {'auto-save' | 'auto-link' | 'data-management' | 'data-cleanup'} */
 let currentSettingsTab = 'auto-save';
 
+/** @param {string} id */
+function cleanupInput(id) {
+  return document.getElementById(id);
+}
+
 /** @returns {import('../../lib/cleanup-filter.js').CleanupFilters} */
 function getCleanupFiltersFromUi() {
   return {
-    presetOlderThan: document.getElementById('cleanup-preset-old').checked,
-    olderThanDays: Number(document.getElementById('cleanup-older-days').value) || 90,
-    presetUnlinked: document.getElementById('cleanup-preset-unlinked').checked,
-    presetEmptyContent: document.getElementById('cleanup-preset-empty').checked,
-    presetAll: document.getElementById('cleanup-preset-all').checked,
+    presetOlderThan: cleanupInput('cleanup-preset-old')?.checked ?? false,
+    olderThanDays: Number(cleanupInput('cleanup-older-days')?.value) || 90,
+    presetUnlinked: cleanupInput('cleanup-preset-unlinked')?.checked ?? false,
+    presetEmptyContent: cleanupInput('cleanup-preset-empty')?.checked ?? false,
+    presetAll: cleanupInput('cleanup-preset-all')?.checked ?? false,
     source: /** @type {import('../../types.js').EntrySource|''} */ (
-      document.getElementById('cleanup-source').value
+      cleanupInput('cleanup-source')?.value
     ) || undefined,
     linkStatus: /** @type {'any'|'linked'|'unlinked'} */ (
-      document.getElementById('cleanup-link-status').value
+      cleanupInput('cleanup-link-status')?.value ?? 'any'
     ),
     contentStatus: /** @type {'any'|'empty'|'has_content'} */ (
-      document.getElementById('cleanup-content-status').value
+      cleanupInput('cleanup-content-status')?.value ?? 'any'
     ),
-    dateFrom: document.getElementById('cleanup-date-from').value,
-    dateTo: document.getElementById('cleanup-date-to').value,
-    keyword: document.getElementById('cleanup-keyword').value.trim(),
-    includeProtected: document.getElementById('cleanup-include-protected').checked,
+    dateFrom: cleanupInput('cleanup-date-from')?.value ?? '',
+    dateTo: cleanupInput('cleanup-date-to')?.value ?? '',
+    keyword: cleanupInput('cleanup-keyword')?.value.trim() ?? '',
+    includeProtected: cleanupInput('cleanup-include-protected')?.checked ?? false,
   };
 }
 
@@ -321,9 +376,30 @@ function hasActiveCleanupCriteria(filters) {
   return false;
 }
 
+let cleanupPreviewRequestId = 0;
+const scheduleCleanupPreview = debounce(() => refreshCleanupPreview(), 200);
+
+/** @param {string} [detail] */
+function cleanupBackendErrorMessage(detail) {
+  const msg = String(detail || '');
+  if (msg === 'unknown action' || msg.includes('no response from extension background')) {
+    return [
+      'バックグラウンド（Service Worker）が古い状態です。',
+      'chrome://extensions を開き「楽曲制作アーカイブ」の再読み込みを押してください。',
+      '開発中の場合は npm run build 後に再読み込みが必要です。',
+    ].join(' ');
+  }
+  if (msg.includes('Could not establish connection') || msg.includes('Receiving end does not exist')) {
+    return [
+      'バックグラウンド（Service Worker）に接続できません。',
+      'chrome://extensions で拡張機能を再読み込みしてください。',
+    ].join(' ');
+  }
+  return msg || '不明なエラー';
+}
+
 async function refreshCleanupPreview() {
-  const panel = document.getElementById('settings-panel-cleanup');
-  if (!panel || panel.hidden) return;
+  if (currentSettingsTab !== 'data-cleanup') return;
 
   const filters = getCleanupFiltersFromUi();
   const active = hasActiveCleanupCriteria(filters);
@@ -331,6 +407,7 @@ async function refreshCleanupPreview() {
   const noteEl = document.getElementById('cleanup-protected-note');
   const previewEl = document.getElementById('cleanup-preview');
   const deleteBtn = document.getElementById('cleanup-delete-btn');
+  if (!countEl || !noteEl || !previewEl || !deleteBtn) return;
 
   if (!active) {
     countEl.textContent = '0';
@@ -340,7 +417,28 @@ async function refreshCleanupPreview() {
     return;
   }
 
-  const res = await send('previewCleanup', { filters, limit: 8 });
+  const requestId = ++cleanupPreviewRequestId;
+  let res;
+  try {
+    res = await send('previewCleanup', { filters, limit: 8 });
+  } catch (err) {
+    if (requestId !== cleanupPreviewRequestId) return;
+    countEl.textContent = '0';
+    noteEl.hidden = true;
+    previewEl.innerHTML = `<li class="cleanup-preview-meta cleanup-preview-error">プレビュー取得に失敗しました: ${escapeHtml(String(err))}</li>`;
+    deleteBtn.disabled = true;
+    return;
+  }
+  if (requestId !== cleanupPreviewRequestId) return;
+
+  if (res?.success === false) {
+    countEl.textContent = '0';
+    noteEl.hidden = true;
+    previewEl.innerHTML = `<li class="cleanup-preview-meta cleanup-preview-error">プレビュー取得に失敗しました: ${escapeHtml(cleanupBackendErrorMessage(res.error))}</li>`;
+    deleteBtn.disabled = true;
+    return;
+  }
+
   const count = res?.count ?? 0;
   countEl.textContent = String(count);
   noteEl.hidden = !!filters.includeProtected;
@@ -377,26 +475,44 @@ async function refreshCleanupPreview() {
 }
 
 function bindCleanupUi() {
-  const inputs = [
+  const immediateIds = [
     'cleanup-preset-old',
-    'cleanup-older-days',
     'cleanup-preset-unlinked',
     'cleanup-preset-empty',
     'cleanup-preset-all',
     'cleanup-source',
     'cleanup-link-status',
     'cleanup-content-status',
+    'cleanup-include-protected',
+  ];
+  const debouncedIds = [
+    'cleanup-older-days',
     'cleanup-date-from',
     'cleanup-date-to',
     'cleanup-keyword',
-    'cleanup-include-protected',
   ];
-  for (const id of inputs) {
-    const el = document.getElementById(id);
+
+  for (const id of immediateIds) {
+    const el = cleanupInput(id);
     if (!el) continue;
-    const evt = el.type === 'checkbox' || el.tagName === 'SELECT' ? 'change' : 'input';
-    el.addEventListener(evt, debounce(refreshCleanupPreview, 200));
+    el.addEventListener('change', () => refreshCleanupPreview());
   }
+
+  for (const id of debouncedIds) {
+    const el = cleanupInput(id);
+    if (!el) continue;
+    el.addEventListener('input', scheduleCleanupPreview);
+    el.addEventListener('change', scheduleCleanupPreview);
+  }
+
+  cleanupInput('cleanup-older-days')?.addEventListener('input', () => {
+    const preset = cleanupInput('cleanup-preset-old');
+    if (preset) preset.checked = true;
+  });
+  cleanupInput('cleanup-older-days')?.addEventListener('change', () => {
+    const preset = cleanupInput('cleanup-preset-old');
+    if (preset) preset.checked = true;
+  });
 
   document.getElementById('cleanup-older-days')?.addEventListener('click', (e) => {
     e.stopPropagation();
@@ -540,14 +656,6 @@ document.getElementById('save-settings-btn').addEventListener('click', async () 
   await saveCurrentSettingsTab();
   alert('設定を保存しました');
 });
-
-function debounce(fn, ms) {
-  let t;
-  return (...args) => {
-    clearTimeout(t);
-    t = setTimeout(() => fn(...args), ms);
-  };
-}
 
 runSearch();
 initTheme();

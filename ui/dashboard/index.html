@@ -136,10 +136,21 @@
 
         <div id="settings-panel-data" class="settings-panel" role="tabpanel" aria-labelledby="settings-tab-data" hidden>
           <p class="settings-panel-desc">アーカイブデータのバックアップと復元。JSON 形式でエクスポート / インポートします。</p>
+          <fieldset class="import-mode-fieldset">
+            <legend>インポート種別</legend>
+            <label class="settings-check">
+              <input type="radio" name="import-mode" id="import-mode-append" value="append" checked>
+              インポート（追加）— 既存データに上書き・追加
+            </label>
+            <label class="settings-check settings-check-danger">
+              <input type="radio" name="import-mode" id="import-mode-replace" value="replace_except_protected">
+              インポート（全件クリアして追加）— プロテクト中のみ残してから取り込み
+            </label>
+          </fieldset>
           <div class="settings-data-actions">
             <button id="export-btn" type="button">エクスポート</button>
             <label class="file-btn secondary">
-              インポート
+              JSON を選択してインポート
               <input id="import-file" type="file" accept="application/json,.json" hidden>
             </label>
           </div>
@@ -156,7 +167,7 @@
               </label>
               <label class="cleanup-days-label">
                 <input id="cleanup-older-days" type="number" min="1" max="3650" value="90" class="cleanup-inline-num">
-                <span>日より古い</span>
+                <span>日より古い（左のチェックで有効）</span>
               </label>
             </div>
             <label class="settings-check"><input id="cleanup-preset-unlinked" type="checkbox"> リンクなし</label>

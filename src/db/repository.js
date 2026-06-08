@@ -181,10 +181,48 @@ export async function exportAll() {
 }
 
 /**
- * @param {{ entries?: import('../types.js').Entry[], links?: import('../types.js').Link[] }} payload
- * @returns {Promise<{ entries: number, links: number }>}
+ * プロテクト中を除くエントリと、削除されたエントリに紐づくリンクを消す。
+ * @returns {Promise<{ entries: number, links: number, keptProtected: number }>}
  */
-export async function importAll(payload) {
+export async function clearNonProtectedData() {
+  let removedEntries = 0;
+  let removedLinks = 0;
+  let keptProtected = 0;
+
+  await db.transaction('rw', db.entries, db.links, async () => {
+    const entries = await db.entries.toArray();
+    const keepIds = new Set(entries.filter((e) => e.protected).map((e) => e.id));
+    keptProtected = keepIds.size;
+
+    for (const entry of entries) {
+      if (entry.protected) continue;
+      await db.entries.delete(entry.id);
+      removedEntries += 1;
+    }
+
+    const links = await db.links.toArray();
+    for (const link of links) {
+      if (keepIds.has(link.chatgptEntryId) && keepIds.has(link.sunoEntryId)) continue;
+      await db.links.delete(link.id);
+      removedLinks += 1;
+    }
+  });
+
+  return { entries: removedEntries, links: removedLinks, keptProtected };
+}
+
+/**
+ * @param {{ entries?: import('../types.js').Entry[], links?: import('../types.js').Link[] }} payload
+ * @param {'append' | 'replace_except_protected'} [mode]
+ * @returns {Promise<{ entries: number, links: number, cleared?: { entries: number, links: number, keptProtected: number } }>}
+ */
+export async function importAll(payload, mode = 'append') {
+  /** @type {{ entries: number, links: number, keptProtected: number } | undefined} */
+  let cleared;
+  if (mode === 'replace_except_protected') {
+    cleared = await clearNonProtectedData();
+  }
+
   let entryCount = 0;
   let linkCount = 0;
   if (payload.entries?.length) {
@@ -199,7 +237,8 @@ export async function importAll(payload) {
       linkCount += 1;
     }
   }
-  return { entries: entryCount, links: linkCount };
+
+  return cleared ? { entries: entryCount, links: linkCount, cleared } : { entries: entryCount, links: linkCount };
 }
 
 /**

@@ -205,10 +205,20 @@ chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
           sendResponse({ success: true, data: await exportAll() });
           break;
         case 'importAll':
-          sendResponse({ success: true, ...(await importAll(request.data || {})) });
+          sendResponse({
+            success: true,
+            ...(await importAll(request.data || {}, request.mode || 'append')),
+          });
           break;
         case 'countEntries':
           sendResponse({ success: true, count: await countEntries() });
+          break;
+        case 'getExtensionInfo':
+          sendResponse({
+            success: true,
+            version: chrome.runtime.getManifest().version,
+            supportsCleanup: true,
+          });
           break;
         case 'previewCleanup':
           sendResponse({ success: true, ...(await previewCleanup(request.filters || {}, request.limit ?? 8)) });
