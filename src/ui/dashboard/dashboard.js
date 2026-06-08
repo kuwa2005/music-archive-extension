@@ -142,7 +142,6 @@ async function selectEntry(id) {
   document.getElementById('detail-lyrics').textContent = lyricsParts.join('\n') || '(歌詞なし)';
 
   await renderLinked(id);
-  await populateManualLinkSelects();
   runSearch();
 }
 
@@ -167,7 +166,6 @@ async function renderLinked(entryId) {
 
 async function populateManualLinkSelects() {
   const chatRes = await send('search', { options: {} });
-  const sunoRes = await send('search', { options: {} });
   const chatSelect = document.getElementById('manual-chatgpt');
   const sunoSelect = document.getElementById('manual-suno');
   chatSelect.innerHTML = '<option value="">AI チャットを選択</option>';
@@ -179,18 +177,42 @@ async function populateManualLinkSelects() {
     opt.textContent = `[${getAiLabel(e.source)}] ${e.title || e.gptName || e.id}`;
     chatSelect.appendChild(opt);
   }
-  for (const e of (sunoRes?.results || []).filter((x) => isSunoEntrySource(x.source))) {
+  for (const e of (chatRes?.results || []).filter((x) => isSunoEntrySource(x.source))) {
     const opt = document.createElement('option');
     opt.value = e.id;
     opt.textContent = e.title || e.sourceUrl;
     sunoSelect.appendChild(opt);
   }
+
+  if (selectedEntry) {
+    if (isAiSource(selectedEntry.source)) {
+      chatSelect.value = selectedEntry.id;
+    } else if (isSunoEntrySource(selectedEntry.source)) {
+      sunoSelect.value = selectedEntry.id;
+    }
+  }
+}
+
+async function openManualLinkDialog() {
+  await populateManualLinkSelects();
+  document.getElementById('manual-link-dialog').hidden = false;
+}
+
+function closeManualLinkDialog() {
+  document.getElementById('manual-link-dialog').hidden = true;
 }
 
 document.getElementById('search-input').addEventListener('input', debounce(runSearch, 250));
 document.getElementById('filter-source').addEventListener('change', runSearch);
 document.getElementById('filter-gpt').addEventListener('input', debounce(runSearch, 250));
 document.getElementById('filter-linked').addEventListener('change', runSearch);
+
+document.getElementById('open-manual-link-btn').addEventListener('click', openManualLinkDialog);
+document.getElementById('manual-link-close-btn').addEventListener('click', closeManualLinkDialog);
+document.getElementById('manual-link-cancel-btn').addEventListener('click', closeManualLinkDialog);
+document.querySelectorAll('[data-close-manual-link]').forEach((el) => {
+  el.addEventListener('click', closeManualLinkDialog);
+});
 
 document.getElementById('manual-link-btn').addEventListener('click', async () => {
   const chatgptEntryId = document.getElementById('manual-chatgpt').value;
@@ -202,6 +224,7 @@ document.getElementById('manual-link-btn').addEventListener('click', async () =>
   await send('createLink', { chatgptEntryId, sunoEntryId });
   if (selectedEntry) await renderLinked(selectedEntry.id);
   alert('リンクを作成しました');
+  closeManualLinkDialog();
 });
 
 document.getElementById('delete-entry-btn').addEventListener('click', async () => {
@@ -488,7 +511,12 @@ document.querySelectorAll('.settings-tab').forEach((btn) => {
 });
 
 document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape' && !document.getElementById('settings-dialog').hidden) {
+  if (e.key !== 'Escape') return;
+  if (!document.getElementById('manual-link-dialog').hidden) {
+    closeManualLinkDialog();
+    return;
+  }
+  if (!document.getElementById('settings-dialog').hidden) {
     closeSettingsDialog();
   }
 });

@@ -25,6 +25,7 @@
       <p>Suno・主要AI（ChatGPT / Claude / Gemini 等）の歌詞・曲情報を横断検索</p>
     </div>
     <div class="topbar-actions">
+      <button id="open-manual-link-btn" type="button" class="secondary">手動リンク追加</button>
       <button id="open-settings-btn" type="button" class="secondary">設定</button>
     </div>
   </header>
@@ -94,12 +95,6 @@
           <ul id="linked-chatgpt"></ul>
           <h4>関連 Suno</h4>
           <ul id="linked-suno"></ul>
-        </div>
-        <div class="manual-link">
-          <h4>手動リンク</h4>
-          <select id="manual-chatgpt"></select>
-          <select id="manual-suno"></select>
-          <button id="manual-link-btn" type="button">リンク作成</button>
         </div>
         <div class="detail-actions">
           <button id="delete-entry-btn" type="button" class="danger">このエントリを削除</button>
@@ -231,6 +226,31 @@
       <footer class="modal-footer">
         <button id="save-settings-btn" type="button">保存</button>
         <button id="settings-cancel-btn" type="button" class="secondary">閉じる</button>
+      </footer>
+    </div>
+  </div>
+
+  <div id="manual-link-dialog" class="modal" hidden>
+    <div class="modal-backdrop" data-close-manual-link></div>
+    <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="manual-link-dialog-title">
+      <header class="modal-header">
+        <h2 id="manual-link-dialog-title">手動リンク追加</h2>
+        <button id="manual-link-close-btn" type="button" class="icon-btn" aria-label="閉じる">×</button>
+      </header>
+      <div class="modal-body">
+        <p class="settings-panel-desc">AI チャットと Suno 曲を選んで関連付けます。</p>
+        <div class="manual-link-form">
+          <label class="settings-field">AI チャット
+            <select id="manual-chatgpt"></select>
+          </label>
+          <label class="settings-field">Suno
+            <select id="manual-suno"></select>
+          </label>
+        </div>
+      </div>
+      <footer class="modal-footer">
+        <button id="manual-link-btn" type="button">リンク作成</button>
+        <button id="manual-link-cancel-btn" type="button" class="secondary">閉じる</button>
       </footer>
     </div>
   </div>
