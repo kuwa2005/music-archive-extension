@@ -215,7 +215,7 @@ async function selectEntry(id) {
       const genFull = formatDateTimeFull(selectedEntry.sunoCreatedAt);
       metaParts.push(`生成 ${genLabel}（${genFull}）`);
     } else {
-      metaParts.push('生成日時: 未取得（曲ページから再保存で補完できます）');
+      metaParts.push('生成日時: 不明');
     }
   }
   if (metaParts.length) {
