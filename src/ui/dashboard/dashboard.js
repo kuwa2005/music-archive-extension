@@ -154,6 +154,29 @@ function createExternalLink(url, label, className = 'external-link') {
   return a;
 }
 
+/** @param {string} fullTitle */
+function splitSongTitleAndArtist(fullTitle) {
+  const m = fullTitle.match(/^(.+?)\s+by\s+(.+)$/i);
+  if (!m) return { songTitle: fullTitle, artistSuffix: '' };
+  return { songTitle: m[1], artistSuffix: ` by ${m[2]}` };
+}
+
+/**
+ * @param {HTMLElement} el
+ * @param {import('../../types.js').Entry} entry
+ */
+function renderDetailTitle(el, entry) {
+  el.textContent = '';
+  const fullTitle = entry.title?.trim() || '無題';
+  if (!entry.sourceUrl) {
+    el.textContent = fullTitle;
+    return;
+  }
+  const { songTitle, artistSuffix } = splitSongTitleAndArtist(fullTitle);
+  el.appendChild(createExternalLink(entry.sourceUrl, songTitle));
+  if (artistSuffix) el.appendChild(document.createTextNode(artistSuffix));
+}
+
 /**
  * @param {import('../../types.js').Entry} entry
  * @returns {string}
@@ -192,7 +215,7 @@ async function selectEntry(id) {
 
   document.getElementById('detail-empty').hidden = true;
   document.getElementById('detail-content').hidden = false;
-  document.getElementById('detail-title').textContent = selectedEntry.title || '無題';
+  renderDetailTitle(document.getElementById('detail-title'), selectedEntry);
   updateDetailProtectBtn(selectedEntry);
 
   const metaEl = document.getElementById('detail-meta');

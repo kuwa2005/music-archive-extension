@@ -257,12 +257,14 @@ body.layout-resizing * {
   word-break: break-all;
 }
 .meta a.external-link,
+.detail-head h3 a.external-link,
 .linked-chip {
   color: var(--color-link);
   text-decoration: underline;
   cursor: pointer;
 }
 .meta a.external-link:hover,
+.detail-head h3 a.external-link:hover,
 .linked-chip:hover {
   color: var(--color-link-hover);
 }
