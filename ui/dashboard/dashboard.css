@@ -126,9 +126,48 @@ body.layout-resizing * {
   cursor: pointer;
   background: var(--color-surface);
 }
+.result-date-group {
+  list-style: none;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  margin: 16px 0 8px;
+  padding: 0 4px;
+}
+.result-date-group:first-child {
+  margin-top: 0;
+}
+.result-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.result-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 6px;
+  min-width: 0;
+}
+.result-date {
+  flex-shrink: 0;
+  font-size: 11px;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
 .result-item:hover, .result-item.active { border-color: #7c5cff; }
-.result-item .title { font-weight: 600; margin-bottom: 4px; }
-.result-item .snippet { font-size: 12px; color: var(--color-text-muted); white-space: pre-wrap; }
+.result-item .title { font-weight: 600; margin-bottom: 4px; line-height: 1.35; }
+.result-item .snippet { font-size: 12px; color: var(--color-text-muted); white-space: pre-wrap; line-height: 1.45; }
+.result-item .snippet .snippet-hit {
+  background: rgba(124, 92, 255, 0.35);
+  color: inherit;
+  border-radius: 2px;
+  padding: 0 1px;
+}
+[data-theme='light'] .result-item .snippet .snippet-hit {
+  background: rgba(124, 92, 255, 0.2);
+}
 .badge {
   display: inline-block;
   font-size: 11px;
@@ -139,8 +178,12 @@ body.layout-resizing * {
 }
 .badge.suno { background: #1b3d2f; color: #7dffb2; }
 .badge.chatgpt { background: #2a2440; color: #c4b5fd; }
+.badge.linked { background: #1a3340; color: #7dd3fc; }
+.badge.protected { background: #3d3520; color: #fcd34d; }
 [data-theme='light'] .badge.suno { background: #d1fae5; color: #065f46; }
 [data-theme='light'] .badge.chatgpt { background: #ede9fe; color: #5b21b6; }
+[data-theme='light'] .badge.linked { background: #e0f2fe; color: #0369a1; }
+[data-theme='light'] .badge.protected { background: #fef3c7; color: #92400e; }
 #detail-lyrics {
   white-space: pre-wrap;
   background: var(--color-input-bg);

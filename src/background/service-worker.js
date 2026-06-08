@@ -1,5 +1,5 @@
 import { defaultSettings } from '../types.js';
-import { upsertEntry, searchEntries, getLinkedEntries, upsertLink, deleteLink, exportAll, importAll, countEntries, deleteEntry, getEntry, previewCleanup, bulkDeleteByCleanupFilters, setEntryProtected } from '../db/repository.js';
+import { upsertEntry, searchEntries, getLinkedEntries, getLinkedEntryIds, upsertLink, deleteLink, exportAll, importAll, countEntries, deleteEntry, getEntry, previewCleanup, bulkDeleteByCleanupFilters, setEntryProtected } from '../db/repository.js';
 import { autoLinkSunoEntry, autoLinkAiEntry } from './linker.js';
 import { isAiSource } from '../lib/ai-sources.js';
 import { isSunoEntrySource } from '../lib/suno-sources.js';
@@ -95,8 +95,11 @@ async function dispatchAction(request) {
       await saveEntriesWithLink(request.data || []);
       return { success: true, count: (request.data || []).length };
     }
-    case 'search':
-      return { success: true, results: await searchEntries(request.options || {}) };
+    case 'search': {
+      const results = await searchEntries(request.options || {});
+      const linkedIds = [...(await getLinkedEntryIds())];
+      return { success: true, results, linkedIds };
+    }
     case 'getLinked':
       return { success: true, ...(await getLinkedEntries(request.entryId)) };
     case 'createLink':

@@ -142,3 +142,25 @@ export function snippetAround(text, query, radius = 60) {
   if (end < text.length) s += '…';
   return s;
 }
+
+/**
+ * @param {string} text
+ * @param {string} query
+ * @param {(s: string) => string} escape
+ * @returns {string}
+ */
+export function highlightSnippet(text, query, escape) {
+  const safe = escape || ((s) => s);
+  if (!text) return '';
+  if (!query?.trim()) return safe(text);
+
+  const normText = text.toLowerCase();
+  const normQuery = query.toLowerCase().trim();
+  const idx = normText.indexOf(normQuery);
+  if (idx < 0) return safe(text);
+
+  const before = safe(text.slice(0, idx));
+  const match = safe(text.slice(idx, idx + normQuery.length));
+  const after = safe(text.slice(idx + normQuery.length));
+  return `${before}<mark class="snippet-hit">${match}</mark>${after}`;
+}

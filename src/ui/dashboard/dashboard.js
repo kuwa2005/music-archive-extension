@@ -1,4 +1,5 @@
-import { snippetAround } from '../../lib/normalize.js';
+import { snippetAround, highlightSnippet } from '../../lib/normalize.js';
+import { formatEntryDate, formatDateTimeFull, formatDateGroupHeader, dateGroupKey } from '../../lib/date-format.js';
 import { getAiLabel, isAiSource } from '../../lib/ai-sources.js';
 import { getSunoSourceLabel, isSunoEntrySource } from '../../lib/suno-sources.js';
 import { initTheme, bindThemeToggle, watchThemeChanges } from '../../lib/theme.js';
@@ -7,6 +8,8 @@ import { sendToBackground } from '../../lib/extension-messaging.js';
 
 /** @type {import('../../types.js').Entry[]} */
 let allResults = [];
+/** @type {Set<string>} */
+let linkedEntryIds = new Set();
 /** @type {import('../../types.js').Entry|null} */
 let selectedEntry = null;
 
@@ -43,7 +46,14 @@ async function runSearch() {
     options: { query, source: source || undefined, gptName: gptName || undefined, linkedOnly },
   });
   allResults = res?.results || [];
+  linkedEntryIds = new Set(res?.linkedIds || []);
   renderResults(query);
+}
+
+function shouldShowDateGroups(entries) {
+  const keys = new Set(entries.map((e) => dateGroupKey(e.capturedAt)));
+  keys.delete('unknown');
+  return keys.size > 1;
 }
 
 function renderResults(query) {
@@ -51,20 +61,44 @@ function renderResults(query) {
   list.innerHTML = '';
   document.getElementById('result-count').textContent = `(${allResults.length})`;
 
+  const showGroups = shouldShowDateGroups(allResults);
+  let lastGroupKey = '';
+
   for (const entry of allResults) {
+    const groupKey = dateGroupKey(entry.capturedAt);
+    if (showGroups && groupKey !== lastGroupKey) {
+      lastGroupKey = groupKey;
+      const header = document.createElement('li');
+      header.className = 'result-date-group';
+      header.textContent = formatDateGroupHeader(entry.capturedAt);
+      list.appendChild(header);
+    }
+
     const li = document.createElement('li');
     li.className = 'result-item' + (selectedEntry?.id === entry.id ? ' active' : '');
     li.dataset.id = entry.id;
 
     const snippet = snippetAround(entry.lyrics || entry.stylePrompt || entry.title, query);
+    const isLinked = linkedEntryIds.has(entry.id);
+    const dateLabel = formatEntryDate(entry.capturedAt);
+    const dateTitle = formatDateTimeFull(entry.capturedAt);
+    const updatedTitle =
+      entry.updatedAt && entry.updatedAt !== entry.capturedAt
+        ? ` · 更新 ${formatDateTimeFull(entry.updatedAt)}`
+        : '';
+
     li.innerHTML = `
-      <div>
-        <span class="badge ${badgeClass(entry.source)}">${sourceLabel(entry.source)}</span>
-        ${entry.gptName ? `<span class="badge">${escapeHtml(entry.gptName)}</span>` : ''}
-        ${isAiSource(entry.source) ? `<span class="badge">${escapeHtml(getAiLabel(entry.source))}</span>` : ''}
+      <div class="result-head">
+        <div class="result-badges">
+          <span class="badge ${badgeClass(entry.source)}">${sourceLabel(entry.source)}</span>
+          ${entry.gptName ? `<span class="badge">${escapeHtml(entry.gptName)}</span>` : ''}
+          ${isLinked ? '<span class="badge linked" title="リンク済み">🔗 リンク</span>' : ''}
+          ${entry.protected ? '<span class="badge protected" title="プロテクト中">🔒</span>' : ''}
+        </div>
+        ${dateLabel ? `<time class="result-date" datetime="${escapeHtml(entry.capturedAt || '')}" title="保存 ${escapeHtml(dateTitle)}${escapeHtml(updatedTitle)}">${escapeHtml(dateLabel)}</time>` : ''}
       </div>
-      <div class="title">${entry.protected ? '<span class="badge protected">🔒</span> ' : ''}${escapeHtml(entry.title || '無題')}</div>
-      <div class="snippet">${escapeHtml(snippet)}</div>
+      <div class="title">${escapeHtml(entry.title || '無題')}</div>
+      <div class="snippet">${highlightSnippet(snippet, query, escapeHtml)}</div>
     `;
     li.addEventListener('click', () => selectEntry(entry.id));
     list.appendChild(li);
@@ -132,11 +166,18 @@ async function selectEntry(id) {
 
   const metaEl = document.getElementById('detail-meta');
   metaEl.textContent = '';
-  const metaParts = [
-    sourceLabel(selectedEntry.source),
-    selectedEntry.gptName,
-    selectedEntry.capturedAt?.slice(0, 19),
-  ].filter(Boolean);
+  const capturedLabel = formatEntryDate(selectedEntry.capturedAt);
+  const capturedFull = formatDateTimeFull(selectedEntry.capturedAt);
+  const metaParts = [sourceLabel(selectedEntry.source), selectedEntry.gptName].filter(Boolean);
+  if (capturedLabel) {
+    metaParts.push(`${capturedLabel}（${capturedFull}）`);
+  }
+  if (
+    selectedEntry.updatedAt &&
+    selectedEntry.updatedAt.slice(0, 16) !== selectedEntry.capturedAt?.slice(0, 16)
+  ) {
+    metaParts.push(`更新 ${formatDateTimeFull(selectedEntry.updatedAt)}`);
+  }
   metaEl.appendChild(document.createTextNode(metaParts.join(' · ')));
   if (selectedEntry.sourceUrl) {
     if (metaParts.length) metaEl.appendChild(document.createTextNode(' · '));

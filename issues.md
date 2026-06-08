@@ -6,6 +6,26 @@
 
 ---
 
+## 1f4511d — 2026-06-08 — 検索結果に保存日時とリンク状態を表示
+
+| 項目 | 内容 |
+|------|------|
+| **種別** | enhancement |
+| **概要** | 保存日時（`capturedAt` / `updatedAt`）を検索結果カードで活用し、日付グループ・ハイライト・リンク状態バッジを追加 |
+| **症状** | データ保存時には `capturedAt` / `updatedAt` が記録されているが、検索結果一覧では日付が表示されず、いつ保存したか判別しづらかった。詳細パネルのみ ISO 文字列の先頭19文字を表示していた |
+| **原因** | `renderResults` がソースバッジ・タイトル・スニペットのみ描画。検索 API もリンク状態を返していなかった |
+| **対応内容** | `src/lib/date-format.js` を追加（相対日付・グループ見出し・フル日時）。検索結果カードに保存日（相対表示＋ツールチップ）、リンク済みバッジ、プロテクト表示、クエリ一致ハイライト（`<mark>`）を追加。複数日にまたがる結果は日付グループ見出しを表示。詳細メタも読みやすい日時表記に変更。`search` API で `linkedIds` を返却。`upsertEntry` は既に初回 `capturedAt` 保持・毎回 `updatedAt` 更新のため変更なし |
+| **関連ファイル** | `src/lib/date-format.js`, `src/lib/normalize.js`, `src/ui/dashboard/dashboard.js`, `src/background/service-worker.js`, `ui/dashboard/dashboard.css`, `dist/dashboard.js`, `dist/service-worker.js` |
+
+### 日時フィールド仕様メモ
+
+| フィールド | 設定タイミング | 形式 | 常に存在 |
+|-----------|--------------|------|---------|
+| `capturedAt` | 初回保存時（既存があれば保持） | ISO 8601（`toISOString()`） | はい（`upsertEntry` で未指定時は保存時刻） |
+| `updatedAt` | 毎回の upsert・プロテクト切替 | ISO 8601 | upsert 経路では常に設定（型上は optional） |
+
+---
+
 ## 7b9ff9d — 2026-06-08 — 自動保存 UI を無効化し設定タブを並べ替え
 
 | 項目 | 内容 |
