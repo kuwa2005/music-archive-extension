@@ -1,5 +1,5 @@
 import { defaultSettings } from '../types.js';
-import { upsertEntry, searchEntries, getLinkedEntries, upsertLink, deleteLink, exportAll, importAll, countEntries, deleteEntry, getEntry } from '../db/repository.js';
+import { upsertEntry, searchEntries, getLinkedEntries, upsertLink, deleteLink, exportAll, importAll, countEntries, deleteEntry, getEntry, previewCleanup, bulkDeleteByCleanupFilters, setEntryProtected } from '../db/repository.js';
 import { autoLinkSunoEntry, autoLinkAiEntry } from './linker.js';
 import { isAiSource } from '../lib/ai-sources.js';
 import { isSunoEntrySource } from '../lib/suno-sources.js';
@@ -209,6 +209,20 @@ chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
           break;
         case 'countEntries':
           sendResponse({ success: true, count: await countEntries() });
+          break;
+        case 'previewCleanup':
+          sendResponse({ success: true, ...(await previewCleanup(request.filters || {}, request.limit ?? 8)) });
+          break;
+        case 'bulkDeleteCleanup': {
+          const deleted = await bulkDeleteByCleanupFilters(request.filters || {});
+          sendResponse({ success: true, ...deleted });
+          break;
+        }
+        case 'setEntryProtected':
+          sendResponse({
+            success: true,
+            entry: await setEntryProtected(request.entryId, !!request.protected),
+          });
           break;
         default:
           sendResponse({ success: false, error: 'unknown action' });

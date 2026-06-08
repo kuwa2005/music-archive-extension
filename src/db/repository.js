@@ -3,6 +3,7 @@ import { isAiSource } from '../lib/ai-sources.js';
 import { isSunoEntrySource } from '../lib/suno-sources.js';
 import { enrichSearchFields } from '../lib/normalize.js';
 import { matchesQuery } from '../lib/similarity.js';
+import { filterEntriesForCleanup } from '../lib/cleanup-filter.js';
 
 /**
  * @returns {string}
@@ -45,6 +46,7 @@ export async function upsertEntry(data) {
     conversationId: data.conversationId ?? existing?.conversationId,
     listContext: data.listContext ?? existing?.listContext,
     imageUrl: data.imageUrl ?? existing?.imageUrl,
+    protected: data.protected ?? existing?.protected ?? false,
     capturedAt: existing?.capturedAt || data.capturedAt || now,
     updatedAt: now,
     ...searchFields,
@@ -234,4 +236,57 @@ export async function deleteEntry(id) {
       }
     }
   });
+}
+
+/**
+ * @returns {Promise<Set<string>>}
+ */
+export async function getLinkedEntryIds() {
+  const links = await db.links.toArray();
+  return new Set([...links.map((l) => l.chatgptEntryId), ...links.map((l) => l.sunoEntryId)]);
+}
+
+/**
+ * @param {import('../lib/cleanup-filter.js').CleanupFilters} filters
+ * @returns {Promise<import('../types.js').Entry[]>}
+ */
+export async function findCleanupTargets(filters) {
+  const [entries, linkedIds] = await Promise.all([db.entries.toArray(), getLinkedEntryIds()]);
+  return filterEntriesForCleanup(entries, linkedIds, filters);
+}
+
+/**
+ * @param {import('../lib/cleanup-filter.js').CleanupFilters} filters
+ * @param {number} [limit]
+ */
+export async function previewCleanup(filters, limit = 8) {
+  const targets = await findCleanupTargets(filters);
+  return { count: targets.length, preview: targets.slice(0, limit) };
+}
+
+/**
+ * @param {import('../lib/cleanup-filter.js').CleanupFilters} filters
+ */
+export async function bulkDeleteByCleanupFilters(filters) {
+  const targets = await findCleanupTargets(filters);
+  for (const entry of targets) {
+    await deleteEntry(entry.id);
+  }
+  return { deleted: targets.length };
+}
+
+/**
+ * @param {string} id
+ * @param {boolean} protectedFlag
+ */
+export async function setEntryProtected(id, protectedFlag) {
+  const entry = await db.entries.get(id);
+  if (!entry) return undefined;
+  const updated = {
+    ...entry,
+    protected: !!protectedFlag,
+    updatedAt: new Date().toISOString(),
+  };
+  await db.entries.put(updated);
+  return updated;
 }

@@ -56,7 +56,7 @@ function renderResults(query) {
         ${entry.gptName ? `<span class="badge">${escapeHtml(entry.gptName)}</span>` : ''}
         ${isAiSource(entry.source) ? `<span class="badge">${escapeHtml(getAiLabel(entry.source))}</span>` : ''}
       </div>
-      <div class="title">${escapeHtml(entry.title || '無題')}</div>
+      <div class="title">${entry.protected ? '<span class="badge protected">🔒</span> ' : ''}${escapeHtml(entry.title || '無題')}</div>
       <div class="snippet">${escapeHtml(snippet)}</div>
     `;
     li.addEventListener('click', () => selectEntry(entry.id));
@@ -100,6 +100,19 @@ function createExternalLink(url, label) {
   return a;
 }
 
+function updateDetailProtectBtn(entry) {
+  const btn = document.getElementById('detail-protect-btn');
+  if (!btn) return;
+  const on = !!entry?.protected;
+  btn.classList.toggle('active', on);
+  btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+  btn.setAttribute(
+    'aria-label',
+    on ? 'プロテクト解除（一括削除の対象に含める）' : 'プロテクト（一括削除から除外）',
+  );
+  btn.title = on ? 'プロテクト中 — クリックで解除' : 'プロテクト（一括削除から除外）';
+}
+
 async function selectEntry(id) {
   const res = await send('getEntry', { entryId: id });
   selectedEntry = res?.entry || allResults.find((e) => e.id === id) || null;
@@ -108,6 +121,7 @@ async function selectEntry(id) {
   document.getElementById('detail-empty').hidden = true;
   document.getElementById('detail-content').hidden = false;
   document.getElementById('detail-title').textContent = selectedEntry.title || '無題';
+  updateDetailProtectBtn(selectedEntry);
 
   const metaEl = document.getElementById('detail-meta');
   metaEl.textContent = '';
@@ -191,12 +205,29 @@ document.getElementById('manual-link-btn').addEventListener('click', async () =>
 });
 
 document.getElementById('delete-entry-btn').addEventListener('click', async () => {
-  if (!selectedEntry || !confirm('このエントリを削除しますか？')) return;
+  if (!selectedEntry) return;
+  const msg = selectedEntry.protected
+    ? 'プロテクト中のデータです。本当に削除しますか？'
+    : 'このエントリを削除しますか？';
+  if (!confirm(msg)) return;
   await send('deleteEntry', { entryId: selectedEntry.id });
   selectedEntry = null;
   document.getElementById('detail-empty').hidden = false;
   document.getElementById('detail-content').hidden = true;
   runSearch();
+  refreshCleanupPreview();
+});
+
+document.getElementById('detail-protect-btn').addEventListener('click', async () => {
+  if (!selectedEntry) return;
+  const next = !selectedEntry.protected;
+  const res = await send('setEntryProtected', { entryId: selectedEntry.id, protected: next });
+  if (res?.entry) {
+    selectedEntry = res.entry;
+    updateDetailProtectBtn(selectedEntry);
+    runSearch();
+    refreshCleanupPreview();
+  }
 });
 
 document.getElementById('export-btn').addEventListener('click', async () => {
@@ -216,6 +247,7 @@ async function importJsonFile(file, handler) {
   const res = await handler(data);
   alert(`インポート完了: ${JSON.stringify(res)}`);
   runSearch();
+  refreshCleanupPreview();
 }
 
 document.getElementById('import-file').addEventListener('change', async (e) => {
@@ -225,8 +257,157 @@ document.getElementById('import-file').addEventListener('change', async (e) => {
   e.target.value = '';
 });
 
-/** @type {'auto-save' | 'auto-link' | 'data-management'} */
+/** @type {'auto-save' | 'auto-link' | 'data-management' | 'data-cleanup'} */
 let currentSettingsTab = 'auto-save';
+
+/** @returns {import('../../lib/cleanup-filter.js').CleanupFilters} */
+function getCleanupFiltersFromUi() {
+  return {
+    presetOlderThan: document.getElementById('cleanup-preset-old').checked,
+    olderThanDays: Number(document.getElementById('cleanup-older-days').value) || 90,
+    presetUnlinked: document.getElementById('cleanup-preset-unlinked').checked,
+    presetEmptyContent: document.getElementById('cleanup-preset-empty').checked,
+    source: /** @type {import('../../types.js').EntrySource|''} */ (
+      document.getElementById('cleanup-source').value
+    ) || undefined,
+    linkStatus: /** @type {'any'|'linked'|'unlinked'} */ (
+      document.getElementById('cleanup-link-status').value
+    ),
+    contentStatus: /** @type {'any'|'empty'|'has_content'} */ (
+      document.getElementById('cleanup-content-status').value
+    ),
+    dateFrom: document.getElementById('cleanup-date-from').value,
+    dateTo: document.getElementById('cleanup-date-to').value,
+    keyword: document.getElementById('cleanup-keyword').value.trim(),
+    includeProtected: document.getElementById('cleanup-include-protected').checked,
+  };
+}
+
+/**
+ * @param {import('../../lib/cleanup-filter.js').CleanupFilters} filters
+ */
+function hasActiveCleanupCriteria(filters) {
+  if (filters.presetOlderThan || filters.presetUnlinked || filters.presetEmptyContent) return true;
+  if (filters.source) return true;
+  if (filters.keyword) return true;
+  if (filters.linkStatus && filters.linkStatus !== 'any') return true;
+  if (filters.contentStatus && filters.contentStatus !== 'any') return true;
+  if (filters.dateFrom || filters.dateTo) return true;
+  return false;
+}
+
+async function refreshCleanupPreview() {
+  const panel = document.getElementById('settings-panel-cleanup');
+  if (!panel || panel.hidden) return;
+
+  const filters = getCleanupFiltersFromUi();
+  const active = hasActiveCleanupCriteria(filters);
+  const countEl = document.getElementById('cleanup-count');
+  const noteEl = document.getElementById('cleanup-protected-note');
+  const previewEl = document.getElementById('cleanup-preview');
+  const deleteBtn = document.getElementById('cleanup-delete-btn');
+
+  if (!active) {
+    countEl.textContent = '0';
+    noteEl.hidden = true;
+    previewEl.innerHTML = '<li class="cleanup-preview-meta">クイック整理または詳細条件を指定してください</li>';
+    deleteBtn.disabled = true;
+    return;
+  }
+
+  const res = await send('previewCleanup', { filters, limit: 8 });
+  const count = res?.count ?? 0;
+  countEl.textContent = String(count);
+  noteEl.hidden = !!filters.includeProtected;
+  deleteBtn.disabled = count === 0;
+
+  previewEl.innerHTML = '';
+  if (!count) {
+    previewEl.innerHTML = '<li class="cleanup-preview-meta">該当データはありません</li>';
+    return;
+  }
+
+  for (const entry of res.preview || []) {
+    const li = document.createElement('li');
+    const title = entry.title || '無題';
+    const date = entry.capturedAt?.slice(0, 10) || '';
+    li.innerHTML = `
+      <div class="cleanup-preview-title">${entry.protected ? '🔒 ' : ''}${escapeHtml(title)}</div>
+      <div class="cleanup-preview-meta">${escapeHtml(sourceLabel(entry.source))} · ${escapeHtml(date)}</div>
+    `;
+    previewEl.appendChild(li);
+  }
+  if (count > (res.preview?.length || 0)) {
+    const li = document.createElement('li');
+    li.className = 'cleanup-preview-meta';
+    li.textContent = `…他 ${count - (res.preview?.length || 0)} 件`;
+    previewEl.appendChild(li);
+  }
+}
+
+function bindCleanupUi() {
+  const inputs = [
+    'cleanup-preset-old',
+    'cleanup-older-days',
+    'cleanup-preset-unlinked',
+    'cleanup-preset-empty',
+    'cleanup-source',
+    'cleanup-link-status',
+    'cleanup-content-status',
+    'cleanup-date-from',
+    'cleanup-date-to',
+    'cleanup-keyword',
+    'cleanup-include-protected',
+  ];
+  for (const id of inputs) {
+    const el = document.getElementById(id);
+    if (!el) continue;
+    const evt = el.type === 'checkbox' || el.tagName === 'SELECT' ? 'change' : 'input';
+    el.addEventListener(evt, debounce(refreshCleanupPreview, 200));
+  }
+
+  document.getElementById('cleanup-older-days')?.addEventListener('click', (e) => {
+    e.stopPropagation();
+  });
+
+  document.getElementById('cleanup-goto-export')?.addEventListener('click', () => {
+    showSettingsTab('data-management');
+  });
+
+  document.getElementById('cleanup-delete-btn')?.addEventListener('click', async () => {
+    const filters = getCleanupFiltersFromUi();
+    if (!hasActiveCleanupCriteria(filters)) return;
+
+    const preview = await send('previewCleanup', { filters, limit: 8 });
+    const count = preview?.count ?? 0;
+    if (!count) return;
+
+    let msg = `${count} 件のデータを削除します。よろしいですか？`;
+    if (count >= 50) {
+      msg = `${count} 件のデータを削除します。この操作は取り消せません。続行しますか？`;
+    }
+    if (filters.includeProtected && count >= 10) {
+      msg += '\n（プロテクト中のデータも含まれます）';
+    }
+    if (!confirm(msg)) return;
+
+    const res = await send('bulkDeleteCleanup', { filters });
+    alert(`${res?.deleted ?? 0} 件を削除しました`);
+    if (selectedEntry?.id) {
+      const still = await send('getEntry', { entryId: selectedEntry.id });
+      if (!still?.entry) {
+        selectedEntry = null;
+        document.getElementById('detail-empty').hidden = false;
+        document.getElementById('detail-content').hidden = true;
+      } else {
+        selectedEntry = still.entry;
+        updateDetailProtectBtn(selectedEntry);
+      }
+    }
+    runSearch();
+    refreshCleanupPreview();
+  });
+}
 
 async function loadSettingsUi() {
   const res = await send('getSettings');
@@ -239,7 +420,7 @@ async function loadSettingsUi() {
 }
 
 /**
- * @param {'auto-save' | 'auto-link' | 'data-management'} tab
+ * @param {'auto-save' | 'auto-link' | 'data-management' | 'data-cleanup'} tab
  */
 function showSettingsTab(tab) {
   currentSettingsTab = tab;
@@ -251,7 +432,12 @@ function showSettingsTab(tab) {
   document.getElementById('settings-panel-auto-save').hidden = tab !== 'auto-save';
   document.getElementById('settings-panel-auto-link').hidden = tab !== 'auto-link';
   document.getElementById('settings-panel-data').hidden = tab !== 'data-management';
-  document.getElementById('save-settings-btn').hidden = tab === 'data-management';
+  document.getElementById('settings-panel-cleanup').hidden = tab !== 'data-cleanup';
+  document.getElementById('save-settings-btn').hidden =
+    tab === 'data-management' || tab === 'data-cleanup';
+  if (tab === 'data-cleanup') {
+    refreshCleanupPreview();
+  }
 }
 
 function openSettingsDialog() {
@@ -295,7 +481,7 @@ document.querySelectorAll('[data-close-settings]').forEach((el) => {
 document.querySelectorAll('.settings-tab').forEach((btn) => {
   btn.addEventListener('click', () => {
     const tab = btn.getAttribute('data-settings-tab');
-    if (tab === 'auto-save' || tab === 'auto-link' || tab === 'data-management') {
+    if (tab === 'auto-save' || tab === 'auto-link' || tab === 'data-management' || tab === 'data-cleanup') {
       showSettingsTab(tab);
     }
   });
@@ -325,3 +511,4 @@ initTheme();
 bindThemeToggle();
 watchThemeChanges();
 initSplitPane();
+bindCleanupUi();

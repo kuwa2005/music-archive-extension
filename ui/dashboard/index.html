@@ -70,7 +70,23 @@
       <h2>詳細</h2>
       <div id="detail-empty">左の結果を選択してください</div>
       <div id="detail-content" hidden>
-        <h3 id="detail-title"></h3>
+        <div class="detail-head">
+          <h3 id="detail-title"></h3>
+          <button
+            type="button"
+            id="detail-protect-btn"
+            class="protect-btn"
+            aria-pressed="false"
+            aria-label="プロテクト（一括削除から除外）"
+            title="プロテクト（一括削除から除外）"
+          >
+            <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+              <path class="key-body" d="M7 11V8a5 5 0 0 1 10 0v3"/>
+              <rect class="key-shaft" x="5" y="11" width="14" height="10" rx="2"/>
+              <circle class="key-hole" cx="12" cy="16" r="1.5"/>
+            </svg>
+          </button>
+        </div>
         <p class="meta" id="detail-meta"></p>
         <pre id="detail-lyrics"></pre>
         <div class="links-block">
@@ -94,7 +110,7 @@
 
   <div id="settings-dialog" class="modal" hidden>
     <div class="modal-backdrop" data-close-settings></div>
-    <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="settings-dialog-title">
+    <div class="modal-panel modal-panel-wide" role="dialog" aria-modal="true" aria-labelledby="settings-dialog-title">
       <header class="modal-header">
         <h2 id="settings-dialog-title">設定</h2>
         <button id="settings-close-btn" type="button" class="icon-btn" aria-label="閉じる">×</button>
@@ -103,6 +119,7 @@
         <button type="button" class="settings-tab active" role="tab" id="settings-tab-auto-save" data-settings-tab="auto-save" aria-selected="true" aria-controls="settings-panel-auto-save">自動保存</button>
         <button type="button" class="settings-tab" role="tab" id="settings-tab-auto-link" data-settings-tab="auto-link" aria-selected="false" aria-controls="settings-panel-auto-link">自動リンク</button>
         <button type="button" class="settings-tab" role="tab" id="settings-tab-data" data-settings-tab="data-management" aria-selected="false" aria-controls="settings-panel-data">データ管理</button>
+        <button type="button" class="settings-tab" role="tab" id="settings-tab-cleanup" data-settings-tab="data-cleanup" aria-selected="false" aria-controls="settings-panel-cleanup">データ整理</button>
       </nav>
       <div class="modal-body">
         <div id="settings-panel-auto-save" class="settings-panel" role="tabpanel" aria-labelledby="settings-tab-auto-save">
@@ -131,6 +148,84 @@
               <input id="import-file" type="file" accept="application/json,.json" hidden>
             </label>
           </div>
+        </div>
+
+        <div id="settings-panel-cleanup" class="settings-panel" role="tabpanel" aria-labelledby="settings-tab-cleanup" hidden>
+          <p class="settings-panel-desc">条件に合うデータを一括削除します。プロテクト中のデータは既定では除外されます。</p>
+
+          <fieldset class="cleanup-fieldset">
+            <legend>クイック整理</legend>
+            <div class="cleanup-preset-row">
+              <label class="settings-check cleanup-preset-check">
+                <input id="cleanup-preset-old" type="checkbox">
+              </label>
+              <label class="cleanup-days-label">
+                <input id="cleanup-older-days" type="number" min="1" max="3650" value="90" class="cleanup-inline-num">
+                <span>日より古い</span>
+              </label>
+            </div>
+            <label class="settings-check"><input id="cleanup-preset-unlinked" type="checkbox"> リンクなし</label>
+            <label class="settings-check"><input id="cleanup-preset-empty" type="checkbox"> 歌詞・プロンプトなし</label>
+          </fieldset>
+
+          <fieldset class="cleanup-fieldset">
+            <legend>詳細条件</legend>
+            <label class="settings-field">ソース
+              <select id="cleanup-source">
+                <option value="">すべて</option>
+                <optgroup label="Suno">
+                  <option value="suno_song">曲</option>
+                  <option value="suno_workspace">ワークスペース</option>
+                  <option value="suno_list">プレイリスト等</option>
+                </optgroup>
+                <optgroup label="AI チャット">
+                  <option value="chatgpt">ChatGPT</option>
+                  <option value="claude">Claude</option>
+                  <option value="gemini">Gemini</option>
+                  <option value="copilot">Copilot</option>
+                  <option value="perplexity">Perplexity</option>
+                  <option value="poe">Poe</option>
+                </optgroup>
+              </select>
+            </label>
+            <label class="settings-field">リンク
+              <select id="cleanup-link-status">
+                <option value="any">すべて</option>
+                <option value="unlinked">リンクなし</option>
+                <option value="linked">リンクあり</option>
+              </select>
+            </label>
+            <label class="settings-field">歌詞・プロンプト
+              <select id="cleanup-content-status">
+                <option value="any">すべて</option>
+                <option value="empty">なし</option>
+                <option value="has_content">あり</option>
+              </select>
+            </label>
+            <div class="settings-field-row">
+              <label class="settings-field">保存日（から）
+                <input id="cleanup-date-from" type="date">
+              </label>
+              <label class="settings-field">保存日（まで）
+                <input id="cleanup-date-to" type="date">
+              </label>
+            </div>
+            <label class="settings-field">AI名 / キーワード
+              <input id="cleanup-keyword" type="text" placeholder="タイトル・歌詞・AI名…">
+            </label>
+            <label class="settings-check settings-check-danger">
+              <input id="cleanup-include-protected" type="checkbox">
+              プロテクト中のデータも削除する
+            </label>
+          </fieldset>
+
+          <div class="cleanup-summary">
+            <p>削除対象: <strong id="cleanup-count">0</strong> 件</p>
+            <p id="cleanup-protected-note" class="cleanup-note" hidden>（プロテクト分は除外されています）</p>
+          </div>
+          <ul id="cleanup-preview" class="cleanup-preview"></ul>
+          <p class="cleanup-hint">削除前に <button type="button" id="cleanup-goto-export" class="linkish">データ管理</button> からエクスポートすることを推奨します。</p>
+          <button id="cleanup-delete-btn" type="button" class="danger cleanup-delete-btn" disabled>この条件で削除</button>
         </div>
       </div>
       <footer class="modal-footer">

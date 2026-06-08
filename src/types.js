@@ -25,6 +25,7 @@
  * @property {string} [lyricsNorm]
  * @property {string} [titleNorm]
  * @property {string} [searchText]
+ * @property {boolean} [protected]
  */
 
 /**
