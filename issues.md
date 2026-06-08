@@ -6,7 +6,7 @@
 
 ---
 
-## （コミット後にハッシュ追記） — 2026-06-09 — sunoCreatedAt: text-sm DOM と __next_f 対応
+## 0614484 — 2026-06-09 — sunoCreatedAt: text-sm DOM と __next_f 対応
 
 | 項目 | 内容 |
 |------|------|
