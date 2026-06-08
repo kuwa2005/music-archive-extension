@@ -40,10 +40,6 @@
 
 /**
  * @typedef {Object} Settings
- * @property {boolean} autoSaveSuno
- * @property {boolean} autoSaveAI
- * @property {boolean} autoSaveChatGPT
- * @property {boolean} autoSaveList
  * @property {number} linkThreshold
  * @property {number} linkWindowDays
  * @property {string[]} [gptNameFilter]
@@ -52,10 +48,6 @@
 /** @returns {Settings} */
 export function defaultSettings() {
   return {
-    autoSaveSuno: false,
-    autoSaveAI: false,
-    autoSaveChatGPT: false,
-    autoSaveList: false,
     linkThreshold: 0.75,
     linkWindowDays: 30,
     gptNameFilter: [],

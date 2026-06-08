@@ -642,17 +642,6 @@ button.linkish {
   font-size: 14px;
   cursor: pointer;
 }
-.settings-disabled-note {
-  color: var(--color-text-muted);
-  font-size: 12px;
-}
-.settings-check-disabled {
-  opacity: 0.55;
-  cursor: not-allowed;
-}
-.settings-check-disabled input[type="checkbox"] {
-  cursor: not-allowed;
-}
 .settings-field {
   display: flex;
   flex-direction: column;

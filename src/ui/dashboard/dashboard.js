@@ -427,8 +427,8 @@ document.getElementById('import-file').addEventListener('change', async (e) => {
   e.target.value = '';
 });
 
-/** @type {'auto-save' | 'auto-link' | 'data-management' | 'data-cleanup'} */
-let currentSettingsTab = 'auto-save';
+/** @type {'auto-link' | 'data-management' | 'data-cleanup'} */
+let currentSettingsTab = 'auto-link';
 
 /** @param {string} id */
 function cleanupInput(id) {
@@ -684,15 +684,12 @@ function bindCleanupUi() {
 async function loadSettingsUi() {
   const res = await send('getSettings');
   const s = res?.settings || {};
-  document.getElementById('setting-auto-suno').checked = !!s.autoSaveSuno;
-  document.getElementById('setting-auto-ai').checked = !!(s.autoSaveAI ?? s.autoSaveChatGPT);
-  document.getElementById('setting-auto-list').checked = !!s.autoSaveList;
   document.getElementById('setting-threshold').value = s.linkThreshold ?? 0.75;
   document.getElementById('setting-window').value = s.linkWindowDays ?? 30;
 }
 
 /**
- * @param {'auto-save' | 'auto-link' | 'data-management' | 'data-cleanup'} tab
+ * @param {'auto-link' | 'data-management' | 'data-cleanup'} tab
  */
 function showSettingsTab(tab) {
   currentSettingsTab = tab;
@@ -701,12 +698,11 @@ function showSettingsTab(tab) {
     btn.classList.toggle('active', active);
     btn.setAttribute('aria-selected', active ? 'true' : 'false');
   });
-  document.getElementById('settings-panel-auto-save').hidden = tab !== 'auto-save';
   document.getElementById('settings-panel-auto-link').hidden = tab !== 'auto-link';
   document.getElementById('settings-panel-data').hidden = tab !== 'data-management';
   document.getElementById('settings-panel-cleanup').hidden = tab !== 'data-cleanup';
   document.getElementById('save-settings-btn').hidden =
-    tab === 'data-management' || tab === 'data-cleanup' || tab === 'auto-save';
+    tab === 'data-management' || tab === 'data-cleanup';
   if (tab === 'data-cleanup') {
     refreshCleanupPreview();
   }
@@ -725,9 +721,6 @@ function closeSettingsDialog() {
 }
 
 async function saveCurrentSettingsTab() {
-  if (currentSettingsTab === 'auto-save') {
-    return;
-  }
   if (currentSettingsTab === 'auto-link') {
     await send('saveSettings', {
       settings: {
@@ -748,7 +741,7 @@ document.querySelectorAll('[data-close-settings]').forEach((el) => {
 document.querySelectorAll('.settings-tab').forEach((btn) => {
   btn.addEventListener('click', () => {
     const tab = btn.getAttribute('data-settings-tab');
-    if (tab === 'auto-save' || tab === 'auto-link' || tab === 'data-management' || tab === 'data-cleanup') {
+    if (tab === 'auto-link' || tab === 'data-management' || tab === 'data-cleanup') {
       showSettingsTab(tab);
     }
   });

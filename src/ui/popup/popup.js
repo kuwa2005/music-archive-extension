@@ -25,19 +25,6 @@ async function refreshCount() {
   }
 }
 
-async function loadSettings() {
-  try {
-    const res = await send('getSettings', {}, INIT_MESSAGING_OPTIONS);
-    if (res?.success === false) return;
-    const s = res?.settings || {};
-    document.getElementById('auto-suno').checked = !!s.autoSaveSuno;
-    document.getElementById('auto-ai').checked = !!(s.autoSaveAI ?? s.autoSaveChatGPT);
-    document.getElementById('auto-list').checked = !!s.autoSaveList;
-  } catch {
-    /* チェックボックスは HTML 既定値のまま */
-  }
-}
-
 function detectCaptureAction(url) {
   if (/suno\.com\/song\//i.test(url)) return 'captureSunoSong';
   if (/suno\.com\/(create|playlist|me)/i.test(url)) return 'captureSunoList';
@@ -82,7 +69,6 @@ document.getElementById('open-dashboard').addEventListener('click', () => {
 });
 
 refreshCount();
-loadSettings();
 initTheme();
 bindThemeToggle();
 watchThemeChanges();

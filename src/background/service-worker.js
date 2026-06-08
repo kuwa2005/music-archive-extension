@@ -12,14 +12,14 @@ const SETTINGS_KEY = 'settings';
 async function getSettings() {
   const result = await chrome.storage.local.get([SETTINGS_KEY]);
   const raw = result[SETTINGS_KEY] || {};
-  const defaults = defaultSettings();
-  const autoSaveAI = raw.autoSaveAI ?? raw.autoSaveChatGPT ?? defaults.autoSaveAI;
-  return {
-    ...defaultSettings(),
-    ...raw,
-    autoSaveAI,
-    autoSaveChatGPT: autoSaveAI,
-  };
+  const {
+    autoSaveSuno: _suno,
+    autoSaveAI: _ai,
+    autoSaveChatGPT: _gpt,
+    autoSaveList: _list,
+    ...rest
+  } = raw;
+  return { ...defaultSettings(), ...rest };
 }
 
 /**

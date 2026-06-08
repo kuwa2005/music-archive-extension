@@ -49,17 +49,6 @@ async function extractSunoSongData() {
   };
 }
 
-async function autoCaptureIfEnabled() {
-  try {
-    const res = await chrome.runtime.sendMessage({ action: 'getSettings' });
-    if (!res?.settings?.autoSaveSuno) return;
-    const data = await extractSunoSongData();
-    await chrome.runtime.sendMessage({ action: 'saveEntry', data });
-  } catch {
-    /* extension context */
-  }
-}
-
 chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
   if (request?._target === 'background') return false;
   if (request.action !== 'captureSunoSong') return false;
@@ -68,12 +57,3 @@ chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
   })();
   return true;
 });
-
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', () => {
-    setTimeout(autoCaptureIfEnabled, 1500);
-  });
-} else {
-  setTimeout(autoCaptureIfEnabled, 1500);
-}
-

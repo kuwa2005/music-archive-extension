@@ -121,7 +121,6 @@
       </header>
       <nav class="settings-tabs" role="tablist" aria-label="設定カテゴリ">
         <button type="button" class="settings-tab active" role="tab" id="settings-tab-auto-link" data-settings-tab="auto-link" aria-selected="true" aria-controls="settings-panel-auto-link">自動リンク</button>
-        <button type="button" class="settings-tab" role="tab" id="settings-tab-auto-save" data-settings-tab="auto-save" aria-selected="false" aria-controls="settings-panel-auto-save">自動保存</button>
         <button type="button" class="settings-tab" role="tab" id="settings-tab-data" data-settings-tab="data-management" aria-selected="false" aria-controls="settings-panel-data">データ管理</button>
         <button type="button" class="settings-tab" role="tab" id="settings-tab-cleanup" data-settings-tab="data-cleanup" aria-selected="false" aria-controls="settings-panel-cleanup">データ整理</button>
       </nav>
@@ -134,13 +133,6 @@
           <label class="settings-field">リンク対象日数
             <input id="setting-window" type="number" min="1" max="365">
           </label>
-        </div>
-
-        <div id="settings-panel-auto-save" class="settings-panel" role="tabpanel" aria-labelledby="settings-tab-auto-save" hidden>
-          <p class="settings-panel-desc">ページを開いたときに自動でアーカイブへ保存します。<span class="settings-disabled-note">現在無効</span>（設定の変更はできません）</p>
-          <label class="settings-check settings-check-disabled"><input id="setting-auto-suno" type="checkbox" disabled> Suno 曲ページを自動保存</label>
-          <label class="settings-check settings-check-disabled"><input id="setting-auto-ai" type="checkbox" disabled> AI チャットを自動保存</label>
-          <label class="settings-check settings-check-disabled"><input id="setting-auto-list" type="checkbox" disabled> Suno リスト（ワークスペース等）を自動保存</label>
         </div>
 
         <div id="settings-panel-data" class="settings-panel" role="tabpanel" aria-labelledby="settings-tab-data" hidden>

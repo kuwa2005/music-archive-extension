@@ -39,25 +39,3 @@ button.secondary {
   color: var(--color-text);
 }
 button:hover { filter: brightness(1.08); }
-footer {
-  padding: 10px 16px 14px;
-  border-top: 1px solid var(--color-border);
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  font-size: 12px;
-  color: var(--color-text-muted);
-}
-label { display: flex; align-items: center; gap: 8px; cursor: pointer; }
-.autosave-disabled-note {
-  margin: 0 0 4px;
-  font-size: 11px;
-  color: var(--color-text-muted);
-}
-.autosave-check-disabled {
-  opacity: 0.55;
-  cursor: not-allowed;
-}
-.autosave-check-disabled input[type="checkbox"] {
-  cursor: not-allowed;
-}

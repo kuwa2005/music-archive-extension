@@ -6,6 +6,18 @@
 
 ---
 
+## df90351 — 2026-06-09 — 自動保存機能を完全削除
+
+| 項目 | 内容 |
+|------|------|
+| **種別** | enhancement |
+| **症状** | 自動保存は UI 上無効化されていたが、設定キー・コンテンツスクリプト・ストレージ処理にコードが残存していた |
+| **原因** | 段階的無効化（7b9ff9d）で UI のみ止め、バックエンドと自動トリガーは温存していた |
+| **対応内容** | `autoSaveSuno` / `autoSaveAI` / `autoSaveChatGPT` / `autoSaveList` を型・既定設定・ストレージから削除。`suno-song` / `suno-list` / `ai-chat` の自動キャプチャと DOM 監視を削除（手動保存・コンテキストメニューは維持）。ダッシュボード設定タブから「自動保存」を除去（自動リンク｜データ管理｜データ整理）。ポップアップの自動保存フッターを削除。README の自動保存記述を更新 |
+| **関連ファイル** | `src/types.js`, `src/background/service-worker.js`, `src/content/*.js`, `src/ui/popup/popup.js`, `src/ui/dashboard/dashboard.js`, `ui/popup/*`, `ui/dashboard/*`, `README.md`, `dist/*` |
+
+---
+
 ## a9250f2 — 2026-06-08 — ダッシュボードを2ペイン構成に変更
 
 | 項目 | 内容 |

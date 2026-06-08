@@ -118,48 +118,6 @@ function extractListEntries() {
   return entries;
 }
 
-let debounceTimer = null;
-const seenUrls = new Set();
-
-async function flushListCapture() {
-  const entries = extractListEntries().filter((e) => {
-    if (!e.sourceUrl || seenUrls.has(e.sourceUrl)) return false;
-    seenUrls.add(e.sourceUrl);
-    return true;
-  });
-  if (!entries.length) return;
-
-  try {
-    const res = await chrome.runtime.sendMessage({ action: 'getSettings' });
-    if (res?.settings?.autoSaveList) {
-      await chrome.runtime.sendMessage({ action: 'saveEntries', data: entries });
-    }
-  } catch {
-    /* ignore */
-  }
-}
-
-function scheduleCapture() {
-  clearTimeout(debounceTimer);
-  debounceTimer = setTimeout(flushListCapture, 800);
-}
-
-const scrollObserver = new IntersectionObserver(
-  () => scheduleCapture(),
-  { root: null, rootMargin: '200px', threshold: 0 },
-);
-
-function observeRows() {
-  document.querySelectorAll('a[href*="/song/"]').forEach((el) => {
-    scrollObserver.observe(el);
-  });
-}
-
-const domObserver = new MutationObserver(() => {
-  observeRows();
-  scheduleCapture();
-});
-
 chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
   if (request?._target === 'background') return false;
   if (request.action === 'captureSunoList') {
@@ -168,17 +126,3 @@ chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
   }
   return false;
 });
-
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', () => {
-    observeRows();
-    domObserver.observe(document.body, { childList: true, subtree: true });
-    scheduleCapture();
-  });
-} else {
-  observeRows();
-  domObserver.observe(document.body, { childList: true, subtree: true });
-  scheduleCapture();
-}
-
-window.addEventListener('scroll', scheduleCapture, { passive: true });
