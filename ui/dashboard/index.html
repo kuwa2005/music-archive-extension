@@ -71,32 +71,38 @@
       <h2>詳細</h2>
       <div id="detail-empty">左の結果を選択してください</div>
       <div id="detail-content" hidden>
-        <div class="detail-head">
-          <h3 id="detail-title"></h3>
-          <button
-            type="button"
-            id="detail-protect-btn"
-            class="protect-btn"
-            aria-pressed="false"
-            aria-label="プロテクト（一括削除から除外）"
-            title="プロテクト（一括削除から除外）"
-          >
-            <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
-              <path class="key-body" d="M7 11V8a5 5 0 0 1 10 0v3"/>
-              <rect class="key-shaft" x="5" y="11" width="14" height="10" rx="2"/>
-              <circle class="key-hole" cx="12" cy="16" r="1.5"/>
-            </svg>
-          </button>
+        <div class="detail-header">
+          <div class="detail-head">
+            <h3 id="detail-title"></h3>
+            <button
+              type="button"
+              id="detail-protect-btn"
+              class="protect-btn"
+              aria-pressed="false"
+              aria-label="プロテクト（一括削除から除外）"
+              title="プロテクト（一括削除から除外）"
+            >
+              <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+                <path class="key-body" d="M7 11V8a5 5 0 0 1 10 0v3"/>
+                <rect class="key-shaft" x="5" y="11" width="14" height="10" rx="2"/>
+                <circle class="key-hole" cx="12" cy="16" r="1.5"/>
+              </svg>
+            </button>
+          </div>
+          <p class="meta" id="detail-meta"></p>
+          <div class="detail-linked" id="detail-linked">
+            <div class="linked-row" id="linked-chatgpt-row" hidden>
+              <span class="linked-label">関連 AI チャット</span>
+              <ul id="linked-chatgpt" class="linked-chips"></ul>
+            </div>
+            <div class="linked-row" id="linked-suno-row" hidden>
+              <span class="linked-label">関連 Suno</span>
+              <ul id="linked-suno" class="linked-chips"></ul>
+            </div>
+          </div>
         </div>
-        <p class="meta" id="detail-meta"></p>
         <div class="detail-scroll">
           <pre id="detail-lyrics"></pre>
-          <div class="links-block">
-            <h4>関連 AI チャット</h4>
-            <ul id="linked-chatgpt"></ul>
-            <h4>関連 Suno</h4>
-            <ul id="linked-suno"></ul>
-          </div>
         </div>
         <div class="detail-actions">
           <button id="delete-entry-btn" type="button" class="danger">このエントリを削除</button>

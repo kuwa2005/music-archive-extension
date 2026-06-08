@@ -127,18 +127,37 @@ function openInNewTab(url) {
 /**
  * @param {string} url
  * @param {string} label
+ * @param {string} [className]
  * @returns {HTMLAnchorElement}
  */
-function createExternalLink(url, label) {
+function createExternalLink(url, label, className = 'external-link') {
   const a = document.createElement('a');
   a.href = url;
   a.textContent = label;
-  a.className = 'external-link';
+  a.className = className;
   a.addEventListener('click', (e) => {
     e.preventDefault();
     openInNewTab(url);
   });
   return a;
+}
+
+/**
+ * @param {import('../../types.js').Entry} entry
+ * @returns {string}
+ */
+function compactLinkLabel(entry) {
+  if (entry.title?.trim()) return entry.title.trim();
+  const url = entry.sourceUrl || '';
+  try {
+    const u = new URL(url);
+    const host = u.hostname.replace(/^www\./, '');
+    const path = u.pathname === '/' ? '' : u.pathname;
+    const compact = host + path;
+    return compact.length > 42 ? `${compact.slice(0, 40)}…` : compact;
+  } catch {
+    return url.length > 42 ? `${url.slice(0, 40)}…` : url;
+  }
 }
 
 function updateDetailProtectBtn(entry) {
@@ -193,23 +212,67 @@ async function selectEntry(id) {
   runSearch();
 }
 
+/**
+ * @param {import('../../types.js').Entry[]} entries
+ * @returns {import('../../types.js').Entry[]}
+ */
+function sortLinkedEntries(entries) {
+  return [...entries].sort((a, b) => {
+    const ta = a.capturedAt || '';
+    const tb = b.capturedAt || '';
+    if (ta !== tb) return tb.localeCompare(ta);
+    return (a.title || '').localeCompare(b.title || '', 'ja');
+  });
+}
+
+/**
+ * @param {import('../../types.js').Entry} entry
+ * @returns {HTMLElement}
+ */
+function createLinkedChip(entry) {
+  const label = compactLinkLabel(entry);
+  if (entry.sourceUrl) {
+    const a = createExternalLink(entry.sourceUrl, label, 'linked-chip');
+    a.title = entry.sourceUrl;
+    return a;
+  }
+  const span = document.createElement('span');
+  span.className = 'linked-chip linked-chip-static';
+  span.textContent = label;
+  span.title = label;
+  return span;
+}
+
+/**
+ * @param {HTMLUListElement} listEl
+ * @param {import('../../types.js').Entry[]} entries
+ */
+function renderLinkedChipList(listEl, entries) {
+  listEl.innerHTML = '';
+  for (const e of entries) {
+    const li = document.createElement('li');
+    li.appendChild(createLinkedChip(e));
+    listEl.appendChild(li);
+  }
+}
+
 async function renderLinked(entryId) {
   const linked = await send('getLinked', { entryId });
   const chatUl = document.getElementById('linked-chatgpt');
   const sunoUl = document.getElementById('linked-suno');
-  chatUl.innerHTML = '';
-  sunoUl.innerHTML = '';
+  const chatRow = document.getElementById('linked-chatgpt-row');
+  const sunoRow = document.getElementById('linked-suno-row');
 
-  for (const e of linked?.chatgpt || []) {
-    const li = document.createElement('li');
-    li.appendChild(createExternalLink(e.sourceUrl, e.sourceUrl));
-    chatUl.appendChild(li);
-  }
-  for (const e of linked?.suno || []) {
-    const li = document.createElement('li');
-    li.appendChild(createExternalLink(e.sourceUrl, e.sourceUrl));
-    sunoUl.appendChild(li);
-  }
+  const chatEntries = sortLinkedEntries(
+    (linked?.chatgpt || []).filter((e) => e.id !== entryId),
+  );
+  const sunoEntries = sortLinkedEntries((linked?.suno || []).filter((e) => e.id !== entryId));
+
+  renderLinkedChipList(chatUl, chatEntries);
+  renderLinkedChipList(sunoUl, sunoEntries);
+
+  if (chatRow) chatRow.hidden = chatEntries.length === 0;
+  if (sunoRow) sunoRow.hidden = sunoEntries.length === 0;
 }
 
 async function populateManualLinkSelects() {
