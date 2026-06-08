@@ -5,6 +5,7 @@ import { getSunoSourceLabel, isSunoEntrySource } from '../../lib/suno-sources.js
 import { initTheme, bindThemeToggle, watchThemeChanges } from '../../lib/theme.js';
 import { initSplitPane } from '../../lib/split-pane.js';
 import { sendToBackground } from '../../lib/extension-messaging.js';
+import { initMessageDialog, showAlert, showConfirm } from '../../lib/dialog.js';
 
 /** @type {import('../../types.js').Entry[]} */
 let allResults = [];
@@ -329,12 +330,12 @@ document.getElementById('manual-link-btn').addEventListener('click', async () =>
   const chatgptEntryId = document.getElementById('manual-chatgpt').value;
   const sunoEntryId = document.getElementById('manual-suno').value;
   if (!chatgptEntryId || !sunoEntryId) {
-    alert('両方選択してください');
+    await showAlert('両方選択してください');
     return;
   }
   await send('createLink', { chatgptEntryId, sunoEntryId });
   if (selectedEntry) await renderLinked(selectedEntry.id);
-  alert('リンクを作成しました');
+  await showAlert('リンクを作成しました');
   closeManualLinkDialog();
 });
 
@@ -343,7 +344,7 @@ document.getElementById('delete-entry-btn').addEventListener('click', async () =
   const msg = selectedEntry.protected
     ? 'プロテクト中のデータです。本当に削除しますか？'
     : 'このエントリを削除しますか？';
-  if (!confirm(msg)) return;
+  if (!(await showConfirm(msg))) return;
   await send('deleteEntry', { entryId: selectedEntry.id });
   selectedEntry = null;
   document.getElementById('detail-empty').hidden = false;
@@ -397,7 +398,7 @@ function formatImportResult(res, mode) {
 
 async function importJsonFile(file, mode) {
   if (mode === 'replace_except_protected') {
-    const ok = confirm(
+    const ok = await showConfirm(
       '既存データを削除してからインポートします。\nプロテクト中のデータのみ残ります。\n\n続行しますか？',
     );
     if (!ok) return;
@@ -407,10 +408,10 @@ async function importJsonFile(file, mode) {
   const data = JSON.parse(text);
   const res = await send('importAll', { data, mode });
   if (res?.success === false) {
-    alert(`インポートに失敗しました: ${res.error || '不明なエラー'}`);
+    await showAlert(`インポートに失敗しました: ${res.error || '不明なエラー'}`);
     return;
   }
-  alert(`インポート完了\n${formatImportResult(res, mode)}`);
+  await showAlert(`インポート完了\n${formatImportResult(res, mode)}`);
   runSearch();
   refreshCleanupPreview();
 }
@@ -422,7 +423,7 @@ document.getElementById('import-file').addEventListener('change', async (e) => {
   try {
     await importJsonFile(file, mode);
   } catch (err) {
-    alert(`インポートに失敗しました: ${err}`);
+    await showAlert(`インポートに失敗しました: ${err}`);
   }
   e.target.value = '';
 });
@@ -660,10 +661,10 @@ function bindCleanupUi() {
         msg += '\n（プロテクト中のデータも含まれます）';
       }
     }
-    if (!confirm(msg)) return;
+    if (!(await showConfirm(msg))) return;
 
     const res = await send('bulkDeleteCleanup', { filters });
-    alert(`${res?.deleted ?? 0} 件を削除しました`);
+    await showAlert(`${res?.deleted ?? 0} 件を削除しました`);
     resetCleanupDangerChecks();
     if (selectedEntry?.id) {
       const still = await send('getEntry', { entryId: selectedEntry.id });
@@ -749,6 +750,8 @@ document.querySelectorAll('.settings-tab').forEach((btn) => {
 
 document.addEventListener('keydown', (e) => {
   if (e.key !== 'Escape') return;
+  const messageDialog = document.getElementById('message-dialog');
+  if (messageDialog && !messageDialog.hidden) return;
   if (!document.getElementById('manual-link-dialog').hidden) {
     closeManualLinkDialog();
     return;
@@ -760,9 +763,10 @@ document.addEventListener('keydown', (e) => {
 
 document.getElementById('save-settings-btn').addEventListener('click', async () => {
   await saveCurrentSettingsTab();
-  alert('設定を保存しました');
+  await showAlert('設定を保存しました');
 });
 
+initMessageDialog();
 runSearch();
 initTheme();
 bindThemeToggle();

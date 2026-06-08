@@ -1,5 +1,6 @@
 import { initTheme, bindThemeToggle, watchThemeChanges } from '../../lib/theme.js';
 import { sendToBackground } from '../../lib/extension-messaging.js';
+import { initMessageDialog, showAlert } from '../../lib/dialog.js';
 
 const INIT_MESSAGING_OPTIONS = { retries: 5, retryDelayMs: 300 };
 
@@ -41,25 +42,25 @@ function detectCaptureAction(url) {
 document.getElementById('save-current').addEventListener('click', async () => {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   if (!tab?.id || !tab.url) {
-    alert('対応ページ（Suno / 主要AI）で実行してください');
+    await showAlert('対応ページ（Suno / 主要AI）で実行してください');
     return;
   }
   const captureAction = detectCaptureAction(tab.url);
   if (!captureAction) {
-    alert('このページは未対応です');
+    await showAlert('このページは未対応です');
     return;
   }
   const response = await chrome.tabs.sendMessage(tab.id, { action: captureAction });
   if (!response?.success) {
-    alert('取得に失敗しました。ページを再読み込みしてください');
+    await showAlert('取得に失敗しました。ページを再読み込みしてください');
     return;
   }
   if (Array.isArray(response.data)) {
     await send('saveEntries', { data: response.data });
-    alert(`${response.data.length} 件を保存しました`);
+    await showAlert(`${response.data.length} 件を保存しました`);
   } else {
     await send('saveEntry', { data: response.data });
-    alert('保存しました');
+    await showAlert('保存しました');
   }
   refreshCount();
 });
@@ -68,6 +69,7 @@ document.getElementById('open-dashboard').addEventListener('click', () => {
   chrome.runtime.openOptionsPage();
 });
 
+initMessageDialog();
 refreshCount();
 initTheme();
 bindThemeToggle();

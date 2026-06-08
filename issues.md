@@ -6,6 +6,18 @@
 
 ---
 
+## bb30e54 — 2026-06-09 — native alert/confirm を CSS モーダルに置換
+
+| 項目 | 内容 |
+|------|------|
+| **種別** | enhancement |
+| **症状** | ダッシュボード・ポップアップで `alert()` / `confirm()` のネイティブダイアログが使われ、設定・手動リンクの CSS モーダルと UI が不統一だった |
+| **原因** | 各操作でブラウザ標準 API を直接呼んでいた |
+| **対応内容** | `src/lib/dialog.js` に `showAlert` / `showConfirm`（Promise API）を追加。既存 `.modal` パターンに合わせた `#message-dialog` を dashboard / popup に配置。`ui/shared/dialog.css` でメッセージ表示・ポップアップ用モーダルシェルを共通化。フォーカストラップ・Escape・aria-modal 対応。削除確認・一括整理・インポート・設定保存・手動リンク・ポップアップ保存の全 alert/confirm を置換 |
+| **関連ファイル** | `src/lib/dialog.js`, `src/ui/dashboard/dashboard.js`, `src/ui/popup/popup.js`, `ui/shared/dialog.css`, `ui/dashboard/index.html`, `ui/popup/index.html`, `dist/dashboard.js`, `dist/popup.js` |
+
+---
+
 ## 088a785 — 2026-06-09 — 詳細ヘッダーに削除アイコンを配置
 
 | 項目 | 内容 |
