@@ -2,6 +2,7 @@ import { initTheme, bindThemeToggle, watchThemeChanges } from '../../lib/theme.j
 import { sendToBackground } from '../../lib/extension-messaging.js';
 import { initMessageDialog, showAlert } from '../../lib/dialog.js';
 import { showTabDialog } from '../../lib/tab-dialog.js';
+import { detectCaptureAction } from '../../lib/capture-actions.js';
 
 const INIT_MESSAGING_OPTIONS = { retries: 5, retryDelayMs: 300 };
 
@@ -40,17 +41,8 @@ async function alertUser(tabId, message) {
   await showAlert(message);
 }
 
-function detectCaptureAction(url) {
-  if (/suno\.com\/song\//i.test(url)) return 'captureSunoSong';
-  if (/suno\.com\/(create|playlist|me)/i.test(url)) return 'captureSunoList';
-  if (
-    /chatgpt\.com|chat\.openai\.com|claude\.ai|gemini\.google\.com|copilot\.microsoft\.com|copilot\.com|perplexity\.ai|poe\.com/i.test(
-      url,
-    )
-  ) {
-    return 'captureAI';
-  }
-  return null;
+function detectCaptureActionForPopup(url) {
+  return detectCaptureAction(url);
 }
 
 document.getElementById('save-current').addEventListener('click', async () => {
@@ -59,22 +51,14 @@ document.getElementById('save-current').addEventListener('click', async () => {
     await alertUser(undefined, '対応ページ（Suno / 主要AI）で実行してください');
     return;
   }
-  const captureAction = detectCaptureAction(tab.url);
-  if (!captureAction) {
+  if (!detectCaptureActionForPopup(tab.url)) {
     await alertUser(tab.id, 'このページは未対応です');
     return;
   }
-  const response = await chrome.tabs.sendMessage(tab.id, { action: captureAction });
-  if (!response?.success) {
+  const res = await send('saveCurrentTab', { tabId: tab.id });
+  if (!res?.success) {
     await alertUser(tab.id, '取得に失敗しました。ページを再読み込みしてください');
     return;
-  }
-  if (Array.isArray(response.data)) {
-    await send('saveEntries', { data: response.data });
-    await alertUser(tab.id, `${response.data.length} 件を保存しました`);
-  } else {
-    await send('saveEntry', { data: response.data });
-    await alertUser(tab.id, '保存しました');
   }
   refreshCount();
 });

@@ -9,6 +9,7 @@ import {
   extractCreatedAtFromPageState,
   findSongHeroRoot,
   parseJapaneseDateTimeToIso,
+  parseEnglishDateTimeToIso,
   extractCreatedAtFromText,
   JAPANESE_DATETIME_RE,
   fetchSunoClipCreatedAt,
@@ -96,7 +97,15 @@ async function main() {
 
   const expected = '2026-05-10T03:10:49.430Z';
   const expectedJaDom = parseJapaneseDateTimeToIso('2026年5月10日 12:10');
-  if (fromDoc !== expected && fromDoc !== expectedJaDom) {
+  const expected03ebJa = parseJapaneseDateTimeToIso('2026年4月11日 7:01');
+  if (fixturePath.includes('03eb8155')) {
+    if (fromDoc !== expected03ebJa && fromDoc !== '2026-04-10T22:01:52.203Z') {
+      console.error('\nFAIL 03eb8155: expected', expected03ebJa, 'or API ISO, got', fromDoc);
+      process.exitCode = 1;
+    } else {
+      console.log('\nOK: 03eb8155 fixture extraction');
+    }
+  } else if (fromDoc !== expected && fromDoc !== expectedJaDom) {
     console.error('\nFAIL: expected', expected, 'or', expectedJaDom, 'got', fromDoc);
     process.exitCode = 1;
   } else {
@@ -110,6 +119,22 @@ async function main() {
   const sample = '2026年5月10日 12:10';
   console.log('\n=== Parser sanity ===');
   console.log(sample, '→', parseJapaneseDateTimeToIso(sample));
+  console.log('April 11, 2026 at 7:01 AM →', parseEnglishDateTimeToIso('April 11, 2026 at 7:01 AM'));
+
+  const textSm03Path = new URL('../fixtures/song-03eb8155-text-sm.html', import.meta.url).pathname.replace(
+    /^\/([A-Z]:)/,
+    '$1',
+  );
+  if (existsSync(textSm03Path)) {
+    const { document: doc03 } = parseHTML(readFileSync(textSm03Path, 'utf8'));
+    const from03 = extractSunoCreatedAtFromDom(doc03, '03eb8155-c8bc-4628-b2db-379e6b769b71');
+    console.log('\n=== 03eb8155 text-sm fixture ===');
+    console.log('extractSunoCreatedAtFromDom:', from03);
+    if (from03 !== expected03ebJa) {
+      console.error('FAIL 03eb8155 text-sm: expected', expected03ebJa, 'got', from03);
+      process.exitCode = 1;
+    }
+  }
 
   const textSmPath = new URL('../fixtures/song-a4ed4df5-text-sm.html', import.meta.url).pathname.replace(
     /^\/([A-Z]:)/,

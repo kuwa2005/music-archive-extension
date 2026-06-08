@@ -31,6 +31,35 @@ const RELATIVE_AGO_RE = /\bago\b/i;
 /** 日本語ロケールの絶対日時（例: 2026年5月10日 12:10） */
 export const JAPANESE_DATETIME_RE = /(\d{4})年(\d{1,2})月(\d{1,2})日\s*(\d{1,2}):(\d{2})/;
 
+/** 英語ロケール（例: April 11, 2026 at 7:01 AM） */
+export const ENGLISH_DATE_HINT_RE = /[A-Za-z]{3,}.*\d{4}|\d{4}.*[A-Za-z]{3,}/;
+
+const ENGLISH_MONTHS = {
+  january: 0,
+  february: 1,
+  march: 2,
+  april: 3,
+  may: 4,
+  june: 5,
+  july: 6,
+  august: 7,
+  september: 8,
+  october: 9,
+  november: 10,
+  december: 11,
+  jan: 0,
+  feb: 1,
+  mar: 2,
+  apr: 3,
+  jun: 5,
+  jul: 6,
+  aug: 7,
+  sep: 8,
+  oct: 9,
+  nov: 10,
+  dec: 11,
+};
+
 /** 2026 UI: Custom 付近の生成日時（text-sm / title 属性が最も安定） */
 export const SUNO_JA_DATE_SELECTORS = [
   'span.text-sm.text-foreground-secondary[title*="年"]',
@@ -149,6 +178,34 @@ export function parseGmtTitleToIso(title) {
  * @param {string} text
  * @returns {string|null}
  */
+/**
+ * 英語表示の日時（Suno title 属性等）を ISO 8601 に変換。
+ * @param {string} text
+ * @returns {string|null}
+ */
+export function parseEnglishDateTimeToIso(text) {
+  if (!text || JAPANESE_DATETIME_RE.test(text)) return null;
+  const normalized = text.normalize('NFKC').replace(/\u00a0/g, ' ').trim();
+  const m = normalized.match(
+    /^([A-Za-z]+)\s+(\d{1,2}),?\s+(\d{4})(?:\s+at\s+(\d{1,2}):(\d{2})(?::(\d{2}))?\s*(AM|PM)?)?/i,
+  );
+  if (m) {
+    const month = ENGLISH_MONTHS[m[1].toLowerCase()];
+    if (month === undefined) return null;
+    let hour = Number(m[4] ?? 0);
+    const minute = Number(m[5] ?? 0);
+    const ampm = (m[7] || '').toUpperCase();
+    if (ampm === 'PM' && hour < 12) hour += 12;
+    if (ampm === 'AM' && hour === 12) hour = 0;
+    const d = new Date(Number(m[3]), month, Number(m[2]), hour, minute);
+    if (!Number.isNaN(d.getTime())) return d.toISOString();
+  }
+  if (!ENGLISH_DATE_HINT_RE.test(normalized)) return null;
+  const d = new Date(normalized);
+  if (Number.isNaN(d.getTime())) return null;
+  return d.toISOString();
+}
+
 export function parseJapaneseDateTimeToIso(text) {
   if (!text) return null;
   const normalized = text.normalize('NFKC').replace(/\u00a0/g, ' ').trim();
@@ -221,11 +278,13 @@ export function findSongHeroRoot(doc) {
  */
 function parseDateFromElement(el) {
   if (!el) return null;
-  const titleParsed = parseJapaneseDateTimeToIso(el.getAttribute('title') || '');
+  const title = el.getAttribute('title') || '';
+  const titleParsed =
+    parseJapaneseDateTimeToIso(title) || parseEnglishDateTimeToIso(title);
   if (titleParsed) return titleParsed;
   const text = (el.textContent || '').normalize('NFKC').replace(/\u00a0/g, ' ').trim();
-  if (!text || text.length > 40) return null;
-  return parseJapaneseDateTimeToIso(text);
+  if (!text || text.length > 60) return null;
+  return parseJapaneseDateTimeToIso(text) || parseEnglishDateTimeToIso(text);
 }
 
 export function extractDateFromScope(root) {
@@ -376,6 +435,13 @@ export function extractCreatedAtFromPageState(doc, clipId) {
  * @returns {string|null} ISO 8601
  */
 export function extractSunoCreatedAtFromDom(doc, clipId) {
+  // バックグラウンドタブでは DOM 日時が描画されないことがあるため、
+  // clipId がある場合は RSC / script 埋め込みを先に試す。
+  if (clipId) {
+    const fromState = extractCreatedAtFromPageState(doc, clipId);
+    if (fromState) return fromState;
+  }
+
   const scopes = [
     findSongHeroRoot(doc),
     doc.querySelector('[data-testid="song-page"]'),
@@ -403,7 +469,7 @@ export function extractSunoCreatedAtFromDom(doc, clipId) {
  * @returns {Promise<string|null>} ISO 8601
  */
 export async function waitForSunoCreatedAt(doc, clipId, options = {}) {
-  const { attempts = 20, intervalMs = 150 } = options;
+  const { attempts = 30, intervalMs = 150 } = options;
   for (let i = 0; i < attempts; i += 1) {
     const found = extractSunoCreatedAtFromDom(doc, clipId);
     if (found) return found;

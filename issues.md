@@ -6,6 +6,20 @@
 
 ---
 
+## COMMIT_HASH — 2026-06-09 — sunoCreatedAt: 保存フロー統合とバックグラウンドタブ対策
+
+| 項目 | 内容 |
+|------|------|
+| **種別** | bug |
+| **症状** | 0614484 後も「やさしい波の光」(03eb8155…) 等を保存しても DB に `sunoCreatedAt` が入らず、ダッシュボード詳細が「生成日時: 不明」のまま |
+| **原因** | (1) **ポップアップ保存**は Suno タブ上で capture → ポップアップ経由で saveEntry と **2 段メッセージ**。**ポップアップ表示中は Suno タブがバックグラウンド**になり、Chrome が DOM 描画・タイマーを抑制するため `span.text-sm…[title="2026年4月11日 7:01"]` が出る前に `waitForSunoCreatedAt` が終了し得る。(2) `extractSunoCreatedAtFromDom` が DOM スコープを **RSC 埋め込み JSON より先**に走査し、SPA 遷移直後など DOM も HTML も空の瞬間に空振り。(3) `studio-api…/clips/{id}` は **未認証 404**（Cookie 必須）でフォールバック不可。(4) `dist/` は git 除外のため 0614484 は **src のみ**—`npm run build` と拡張リロード・**Suno タブ再読込**をしないと旧 content script が動き続ける |
+| **対応内容** | Service Worker に **`saveCurrentTab`** を追加（タブ前面化 → capture → **`ensureSunoCreatedAt`** → upsert）。未取得時は content script の **`getSunoCreatedAt`**（延長ポーリング）で再取得。`extractSunoCreatedAtFromDom` は clipId あり時 **page state 優先**。英語 `title`（April 11, 2026 at 7:01 AM）パーサー追加。ポップアップは `saveCurrentTab` のみ呼ぶ。フィクスチャ `fixtures/song-03eb8155-text-sm.html` と SSR `song-03eb8155-live-fetch.html` を追加 |
+| **関連ファイル** | `src/background/service-worker.js`, `src/lib/capture-tab.js`, `src/lib/capture-actions.js`, `src/lib/suno-selectors.js`, `src/content/suno-song.js`, `src/ui/popup/popup.js`, `fixtures/song-03eb8155-text-sm.html`, `scripts/test-suno-date.mjs`, `dist/*` |
+
+**再現確認（03eb8155）:** ページ上 `span.text-sm.text-foreground-secondary[title="2026年4月11日 7:01"]`。RSC 埋め込み `created_at`: `2026-04-10T22:01:52.203Z`
+
+---
+
 ## 0614484 — 2026-06-09 — sunoCreatedAt: text-sm DOM と __next_f 対応
 
 | 項目 | 内容 |

@@ -68,6 +68,17 @@ async function extractSunoSongData() {
 
 chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
   if (request?._target === 'background') return false;
+  if (request.action === 'getSunoCreatedAt') {
+    (async () => {
+      const clipId = parseClipIdFromUrl(window.location.href.split('?')[0].split('#')[0]);
+      const sunoCreatedAt = await waitForSunoCreatedAt(document, clipId, {
+        attempts: 40,
+        intervalMs: 150,
+      });
+      sendResponse({ success: true, sunoCreatedAt: sunoCreatedAt || undefined });
+    })();
+    return true;
+  }
   if (request.action !== 'captureSunoSong') return false;
   (async () => {
     sendResponse({ success: true, data: await extractSunoSongData() });

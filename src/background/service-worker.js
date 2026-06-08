@@ -4,6 +4,8 @@ import { autoLinkSunoEntry, autoLinkAiEntry } from './linker.js';
 import { isAiSource } from '../lib/ai-sources.js';
 import { isSunoEntrySource } from '../lib/suno-sources.js';
 import { showTabDialog } from '../lib/tab-dialog.js';
+import { detectCaptureAction } from '../lib/capture-actions.js';
+import { captureFromTab, ensureSunoCreatedAt } from '../lib/capture-tab.js';
 
 const SETTINGS_KEY = 'settings';
 
@@ -88,6 +90,37 @@ async function saveEntryWithLink(data) {
 }
 
 /**
+ * 対象タブを前面化して capture し、Suno 曲は sunoCreatedAt を補完してから保存する。
+ * @param {number} tabId
+ * @returns {Promise<{ entry?: import('../types.js').Entry, links?: import('../types.js').Link[], count?: number }>}
+ */
+async function saveFromTab(tabId) {
+  const tab = await chrome.tabs.get(tabId);
+  const url = tab.url || '';
+  const captureAction = detectCaptureAction(url);
+  if (!captureAction) {
+    throw new Error('unsupported page');
+  }
+
+  const response = await captureFromTab(tabId, captureAction);
+  if (!response?.success) {
+    throw new Error(response?.error || 'capture failed');
+  }
+
+  if (Array.isArray(response.data)) {
+    const items = response.data;
+    await saveEntriesWithLink(items);
+    await notifySaveOnTab(tabId, `${items.length} 件を保存しました`);
+    return { count: items.length };
+  }
+
+  let data = await ensureSunoCreatedAt(tabId, response.data);
+  const result = await saveEntryWithLink(data);
+  await notifySaveOnTab(tabId, '保存しました');
+  return result;
+}
+
+/**
  * @param {Record<string, unknown>} request
  * @returns {Promise<Record<string, unknown>>}
  */
@@ -107,6 +140,12 @@ async function dispatchAction(request) {
       return { success: true, settings: await getSettings() };
     case 'saveEntry':
       return { success: true, ...(await saveEntryWithLink(request.data)) };
+    case 'saveCurrentTab': {
+      if (!request.tabId) {
+        return { success: false, error: 'tabId required' };
+      }
+      return { success: true, ...(await saveFromTab(request.tabId)) };
+    }
     case 'saveEntries': {
       await saveEntriesWithLink(request.data || []);
       return { success: true, count: (request.data || []).length };
@@ -227,25 +266,11 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
     return;
   }
 
-  const actionMap = {
-    'save-suno-song': 'captureSunoSong',
-    'save-suno-list': 'captureSunoList',
-    'save-ai-chat': 'captureAI',
-  };
-  const action = actionMap[info.menuItemId];
-  if (!action) return;
+  const saveMenuIds = new Set(['save-suno-song', 'save-suno-list', 'save-ai-chat']);
+  if (!saveMenuIds.has(String(info.menuItemId))) return;
 
   try {
-    const response = await chrome.tabs.sendMessage(tab.id, { action });
-    if (response?.data) {
-      if (Array.isArray(response.data)) {
-        await saveEntriesWithLink(response.data);
-        await notifySaveOnTab(tab.id, `${response.data.length} 件を保存しました`);
-      } else {
-        await saveEntryWithLink(response.data);
-        await notifySaveOnTab(tab.id, '保存しました');
-      }
-    }
+    await saveFromTab(tab.id);
   } catch (err) {
     console.error(err);
   }
