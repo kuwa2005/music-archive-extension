@@ -1,21 +1,41 @@
 import { initTheme, bindThemeToggle, watchThemeChanges } from '../../lib/theme.js';
 import { sendToBackground } from '../../lib/extension-messaging.js';
 
-function send(action, payload = {}) {
-  return sendToBackground(action, payload);
+const INIT_MESSAGING_OPTIONS = { retries: 5, retryDelayMs: 300 };
+
+function send(action, payload = {}, options = {}) {
+  return sendToBackground(action, payload, options);
+}
+
+function setCountLabelFallback(message = '保存件数: 取得できません') {
+  const el = document.getElementById('count-label');
+  if (el) el.textContent = message;
 }
 
 async function refreshCount() {
-  const res = await send('countEntries');
-  document.getElementById('count-label').textContent = `保存件数: ${res?.count ?? 0} 件`;
+  try {
+    const res = await send('countEntries', {}, INIT_MESSAGING_OPTIONS);
+    if (res?.success === false) {
+      setCountLabelFallback('保存件数: 取得できません（再読み込み）');
+      return;
+    }
+    setCountLabelFallback(`保存件数: ${res?.count ?? 0} 件`);
+  } catch {
+    setCountLabelFallback('保存件数: 取得できません（再読み込み）');
+  }
 }
 
 async function loadSettings() {
-  const res = await send('getSettings');
-  const s = res?.settings || {};
-  document.getElementById('auto-suno').checked = !!s.autoSaveSuno;
-  document.getElementById('auto-ai').checked = !!(s.autoSaveAI ?? s.autoSaveChatGPT);
-  document.getElementById('auto-list').checked = !!s.autoSaveList;
+  try {
+    const res = await send('getSettings', {}, INIT_MESSAGING_OPTIONS);
+    if (res?.success === false) return;
+    const s = res?.settings || {};
+    document.getElementById('auto-suno').checked = !!s.autoSaveSuno;
+    document.getElementById('auto-ai').checked = !!(s.autoSaveAI ?? s.autoSaveChatGPT);
+    document.getElementById('auto-list').checked = !!s.autoSaveList;
+  } catch {
+    /* チェックボックスは HTML 既定値のまま */
+  }
 }
 
 async function saveSetting(key, value) {

@@ -242,7 +242,9 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
   }
 });
 
-chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request?._target !== 'background' && sender.tab) return false;
+
   (async () => {
     try {
       sendResponse(await dispatchAction(request));
@@ -255,14 +257,16 @@ chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
 
 chrome.runtime.onConnect.addListener((port) => {
   if (port.name !== 'ma-background') return;
+
   port.onMessage.addListener((request) => {
+    const requestId = request?.requestId;
     (async () => {
       try {
         const result = await dispatchAction(request);
-        port.postMessage({ requestId: request.requestId, ...result });
+        port.postMessage({ requestId, ...result });
       } catch (err) {
         port.postMessage({
-          requestId: request.requestId,
+          requestId,
           success: false,
           error: String(err),
         });

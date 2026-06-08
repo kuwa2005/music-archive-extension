@@ -6,6 +6,27 @@
 
 ---
 
+## 058ce97 — 2026-06-08 — ポップアップ起動時の SW 接続エラー修正（v1.2.3）
+
+| 項目 | 内容 |
+|------|------|
+| **種別** | bug |
+| **概要** | ポップアップを開いた直後に `Could not establish connection. Receiving end does not exist.` が未捕捉で表示される問題を修正 |
+| **症状** | `ui/popup/index.html` / `dist/popup.js` で `refreshCount`・`loadSettings` 初期化時に Uncaught (in promise) Error。Service Worker がスリープ中だと件数・設定取得が失敗 |
+| **原因** | `sendToBackground` が `sendMessage` / Port の接続失敗時に `reject`・`throw` しうる実装だった。ポップアップ側も `refreshCount()` / `loadSettings()` を await せず try/catch もなく、SW コールドスタート時に未捕捉の Promise rejection になっていた |
+| **対応内容** | `sendToBackground` を全面非 throw 化（`failureResponse` で `{ success: false, error }` を返却）。`ping` による SW ウェイクアップ、リトライ増（既定 4 回）、Port `onDisconnect` の確実な settle。ポップアップ初期化に try/catch と件数ラベルのフォールバック表示。SW `onMessage` で content script 横取りを `_target` + `sender.tab` で除外。manifest **1.2.3** |
+| **関連ファイル** | `src/lib/extension-messaging.js`, `src/ui/popup/popup.js`, `src/background/service-worker.js`, `manifest.json`, `dist/popup.js`, `dist/service-worker.js` |
+
+### ユーザー向け：拡張機能の再読み込み手順（v1.2.3 適用）
+
+1. `chrome://extensions` を開く（「デベロッパー モード」をオン）
+2. 「楽曲制作アーカイブ」の **再読み込み**（↻）をクリック  
+   - バージョンが **1.2.3** になっていることを確認
+3. ツールバーの拡張アイコンからポップアップを開き、**保存件数** が表示されること（一時的に「取得できません（再読み込み）」と出た場合は手順 2 を繰り返す）
+4. 開発中にソースを直した場合は `cd music-archive-extension` → `npm run build` 後に手順 2 を繰り返す
+
+---
+
 ## 7d1abb7 — 2026-06-08 — データ整理プレビューの SW 誤検知を根本修正（v1.2.2）
 
 | 項目 | 内容 |
