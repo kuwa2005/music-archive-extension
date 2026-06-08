@@ -31,6 +31,29 @@
   },
   "content_scripts": [
     {
+      "matches": [
+        "https://suno.com/song/*",
+        "https://*.suno.com/song/*",
+        "https://suno.com/create*",
+        "https://*.suno.com/create*",
+        "https://suno.com/playlist/*",
+        "https://*.suno.com/playlist/*",
+        "https://suno.com/me*",
+        "https://*.suno.com/me*",
+        "https://chatgpt.com/*",
+        "https://chat.openai.com/*",
+        "https://claude.ai/*",
+        "https://gemini.google.com/*",
+        "https://copilot.microsoft.com/*",
+        "https://copilot.com/*",
+        "https://www.perplexity.ai/*",
+        "https://perplexity.ai/*",
+        "https://poe.com/*"
+      ],
+      "js": ["dist/dialog-host.js"],
+      "run_at": "document_idle"
+    },
+    {
       "matches": ["https://suno.com/song/*", "https://*.suno.com/song/*"],
       "js": ["dist/suno-song.js"],
       "run_at": "document_idle"
@@ -80,5 +103,23 @@
     "16": "icons/icon16.png",
     "48": "icons/icon48.png",
     "128": "icons/icon128.png"
-  }
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["ui/shared/dialog-host-page.css"],
+      "matches": [
+        "https://suno.com/*",
+        "https://*.suno.com/*",
+        "https://chatgpt.com/*",
+        "https://chat.openai.com/*",
+        "https://claude.ai/*",
+        "https://gemini.google.com/*",
+        "https://copilot.microsoft.com/*",
+        "https://copilot.com/*",
+        "https://www.perplexity.ai/*",
+        "https://perplexity.ai/*",
+        "https://poe.com/*"
+      ]
+    }
+  ]
 }

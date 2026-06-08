@@ -3,6 +3,7 @@ import { upsertEntry, searchEntries, getLinkedEntries, getLinkedEntryIds, upsert
 import { autoLinkSunoEntry, autoLinkAiEntry } from './linker.js';
 import { isAiSource } from '../lib/ai-sources.js';
 import { isSunoEntrySource } from '../lib/suno-sources.js';
+import { showTabDialog } from '../lib/tab-dialog.js';
 
 const SETTINGS_KEY = 'settings';
 
@@ -48,6 +49,21 @@ async function saveEntriesWithLink(items) {
 /**
  * @param {Partial<import('../types.js').Entry>} data
  */
+/**
+ * @param {number} tabId
+ * @param {string} message
+ */
+async function notifySaveOnTab(tabId, message) {
+  const { shown } = await showTabDialog(tabId, message);
+  if (shown) return;
+  chrome.notifications.create({
+    type: 'basic',
+    iconUrl: 'icons/icon48.png',
+    title: '楽曲制作アーカイブ',
+    message,
+  });
+}
+
 async function saveEntryWithLink(data) {
   const settings = await getSettings();
   const entry = await upsertEntry(data);
@@ -224,20 +240,10 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
     if (response?.data) {
       if (Array.isArray(response.data)) {
         await saveEntriesWithLink(response.data);
-        chrome.notifications.create({
-          type: 'basic',
-          iconUrl: 'icons/icon48.png',
-          title: '楽曲制作アーカイブ',
-          message: `${response.data.length} 件を保存しました`,
-        });
+        await notifySaveOnTab(tab.id, `${response.data.length} 件を保存しました`);
       } else {
         await saveEntryWithLink(response.data);
-        chrome.notifications.create({
-          type: 'basic',
-          iconUrl: 'icons/icon48.png',
-          title: '楽曲制作アーカイブ',
-          message: '保存しました',
-        });
+        await notifySaveOnTab(tab.id, '保存しました');
       }
     }
   } catch (err) {

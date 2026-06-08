@@ -1,0 +1,119 @@
+/* Page-injected message dialog — scoped to #message-dialog (avoids host site CSS clashes) */
+
+#message-dialog.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483646;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  font-family: "Segoe UI", system-ui, sans-serif;
+  --color-surface: #12151c;
+  --color-border: #252830;
+  --color-border-strong: #333844;
+  --color-text: #e8eaed;
+  --color-text-muted: #9aa0a6;
+  --color-btn-secondary: #2a2d36;
+  --color-modal-backdrop: rgba(0, 0, 0, 0.65);
+  --color-shadow: rgba(0, 0, 0, 0.45);
+}
+
+#message-dialog.modal[hidden] {
+  display: none;
+}
+
+#message-dialog .modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: var(--color-modal-backdrop);
+}
+
+#message-dialog .modal-panel {
+  position: relative;
+  width: min(480px, 100%);
+  max-height: min(85vh, 720px);
+  overflow: auto;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-strong);
+  border-radius: 12px;
+  box-shadow: 0 16px 48px var(--color-shadow);
+  color: var(--color-text);
+}
+
+#message-dialog .modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+#message-dialog .modal-header h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+#message-dialog .modal-body {
+  padding: 20px;
+}
+
+#message-dialog .modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 16px 20px;
+  border-top: 1px solid var(--color-border);
+}
+
+#message-dialog .message-dialog-text {
+  margin: 0;
+  white-space: pre-line;
+  line-height: 1.5;
+  word-break: break-word;
+  font-size: 14px;
+  color: var(--color-text);
+}
+
+#message-dialog .icon-btn {
+  background: transparent;
+  color: var(--color-text-muted);
+  font-size: 22px;
+  line-height: 1;
+  padding: 4px 8px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+#message-dialog .icon-btn:hover {
+  color: var(--color-text);
+  background: var(--color-btn-secondary);
+}
+
+#message-dialog .modal-footer button {
+  border: none;
+  border-radius: 8px;
+  padding: 10px 16px;
+  font-size: 13px;
+  cursor: pointer;
+  background: #7c5cff;
+  color: #fff;
+  font-family: inherit;
+}
+
+#message-dialog .modal-footer button.secondary {
+  background: var(--color-btn-secondary);
+  color: var(--color-text);
+}
+
+#message-dialog .modal-footer button:hover {
+  filter: brightness(1.08);
+}
+
+body.ma-message-dialog-open {
+  overflow: hidden;
+}

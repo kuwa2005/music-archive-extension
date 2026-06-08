@@ -6,6 +6,18 @@
 
 ---
 
+## 02cef66 — 2026-06-09 — ポップアップ保存通知をタブ中央モーダルに表示
+
+| 項目 | 内容 |
+|------|------|
+| **種別** | bug |
+| **症状** | Suno 曲ページからポップアップで保存すると「お知らせ」「保存しました」ダイアログが画面上部に小さく表示され、設定ダイアログのような中央の大きなウィンドウにならない |
+| **原因** | `showAlert` が拡張ポップアップ（幅約 320px）内の `#message-dialog` に描画され、ビューポート全体ではなくポップアップ内で中央揃えされていた。コンテキストメニュー保存は `chrome.notifications` 経由で別 UI だった |
+| **対応内容** | 対応ホスト全ページに `dialog-host` コンテンツスクリプトを注入し、`showExtensionDialog` メッセージで `dialog.js` 同一のモーダルをページ上に表示（`fixed inset-0`・パネル幅 480px・バックドロップ）。ポップアップ保存・エラー通知は `showTabDialog` 経由でタブ側を優先、フォールバックでポップアップ内表示。右クリック保存もタブ中央モーダルに統一（失敗時のみ通知）。ダッシュボードの `showAlert` はフルタブ上の既存 `modal.css` のまま中央表示を確認 |
+| **関連ファイル** | `src/content/dialog-host.js`, `src/lib/tab-dialog.js`, `ui/shared/dialog-host-page.css`, `src/ui/popup/popup.js`, `src/background/service-worker.js`, `manifest.json`, `build.mjs`, `dist/*` |
+
+---
+
 ## 19193aa — 2026-06-09 — Suno 曲の生成日時を保存・表示
 
 | 項目 | 内容 |

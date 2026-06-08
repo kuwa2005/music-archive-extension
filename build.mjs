@@ -12,6 +12,7 @@ const shared = {
 
 const entries = [
   { in: 'src/background/service-worker.js', out: 'dist/service-worker.js', format: 'esm' },
+  { in: 'src/content/dialog-host.js', out: 'dist/dialog-host.js', format: 'iife' },
   { in: 'src/content/suno-song.js', out: 'dist/suno-song.js', format: 'iife' },
   { in: 'src/content/suno-list.js', out: 'dist/suno-list.js', format: 'iife' },
   { in: 'src/content/ai-chat.js', out: 'dist/ai-chat.js', format: 'iife' },

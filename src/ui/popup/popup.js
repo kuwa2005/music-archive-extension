@@ -1,6 +1,7 @@
 import { initTheme, bindThemeToggle, watchThemeChanges } from '../../lib/theme.js';
 import { sendToBackground } from '../../lib/extension-messaging.js';
 import { initMessageDialog, showAlert } from '../../lib/dialog.js';
+import { showTabDialog } from '../../lib/tab-dialog.js';
 
 const INIT_MESSAGING_OPTIONS = { retries: 5, retryDelayMs: 300 };
 
@@ -26,6 +27,19 @@ async function refreshCount() {
   }
 }
 
+/**
+ * 対応タブ上ではビューポート中央のモーダル、それ以外はポップアップ内に表示。
+ * @param {number | undefined} tabId
+ * @param {string} message
+ */
+async function alertUser(tabId, message) {
+  if (tabId) {
+    const { shown } = await showTabDialog(tabId, message);
+    if (shown) return;
+  }
+  await showAlert(message);
+}
+
 function detectCaptureAction(url) {
   if (/suno\.com\/song\//i.test(url)) return 'captureSunoSong';
   if (/suno\.com\/(create|playlist|me)/i.test(url)) return 'captureSunoList';
@@ -42,25 +56,25 @@ function detectCaptureAction(url) {
 document.getElementById('save-current').addEventListener('click', async () => {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   if (!tab?.id || !tab.url) {
-    await showAlert('対応ページ（Suno / 主要AI）で実行してください');
+    await alertUser(undefined, '対応ページ（Suno / 主要AI）で実行してください');
     return;
   }
   const captureAction = detectCaptureAction(tab.url);
   if (!captureAction) {
-    await showAlert('このページは未対応です');
+    await alertUser(tab.id, 'このページは未対応です');
     return;
   }
   const response = await chrome.tabs.sendMessage(tab.id, { action: captureAction });
   if (!response?.success) {
-    await showAlert('取得に失敗しました。ページを再読み込みしてください');
+    await alertUser(tab.id, '取得に失敗しました。ページを再読み込みしてください');
     return;
   }
   if (Array.isArray(response.data)) {
     await send('saveEntries', { data: response.data });
-    await showAlert(`${response.data.length} 件を保存しました`);
+    await alertUser(tab.id, `${response.data.length} 件を保存しました`);
   } else {
     await send('saveEntry', { data: response.data });
-    await showAlert('保存しました');
+    await alertUser(tab.id, '保存しました');
   }
   refreshCount();
 });
