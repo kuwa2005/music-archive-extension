@@ -2,6 +2,7 @@ import {
   parseClipIdFromUrl,
   extractStyleFromRoot,
   detectListContext,
+  extractDateFromScope,
 } from '../lib/suno-selectors.js';
 import { sourceFromListContext } from '../lib/suno-sources.js';
 
@@ -51,7 +52,7 @@ function collectSongUrls() {
 
 /**
  * @param {string} url
- * @returns {{ title: string, stylePrompt: string, imageUrl: string }}
+ * @returns {{ title: string, stylePrompt: string, imageUrl: string, sunoCreatedAt?: string }}
  */
 function extractRowMeta(url) {
   const uuid = url.split('/').pop();
@@ -69,6 +70,7 @@ function extractRowMeta(url) {
   let title = '';
   let stylePrompt = '';
   let imageUrl = '';
+  let sunoCreatedAt;
 
   if (link) {
     title = link.textContent.trim() || link.getAttribute('title') || link.getAttribute('aria-label') || '';
@@ -85,10 +87,11 @@ function extractRowMeta(url) {
       if (img) {
         imageUrl = img.getAttribute('data-src') || img.src || '';
       }
+      sunoCreatedAt = extractDateFromScope(parent) || undefined;
     }
   }
 
-  return { title, stylePrompt, imageUrl };
+  return { title, stylePrompt, imageUrl, sunoCreatedAt };
 }
 
 /**
@@ -112,6 +115,7 @@ function extractListEntries() {
       clipId: clipId || undefined,
       listContext,
       imageUrl: meta.imageUrl,
+      sunoCreatedAt: meta.sunoCreatedAt,
       capturedAt: new Date().toISOString(),
     });
   }

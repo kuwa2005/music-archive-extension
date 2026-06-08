@@ -87,6 +87,14 @@ function renderResults(query) {
       entry.updatedAt && entry.updatedAt !== entry.capturedAt
         ? ` · 更新 ${formatDateTimeFull(entry.updatedAt)}`
         : '';
+    const genLabel =
+      entry.source === 'suno_song' && entry.sunoCreatedAt
+        ? formatEntryDate(entry.sunoCreatedAt)
+        : '';
+    const genTitle =
+      entry.source === 'suno_song' && entry.sunoCreatedAt
+        ? ` · 生成 ${formatDateTimeFull(entry.sunoCreatedAt)}`
+        : '';
 
     li.innerHTML = `
       <div class="result-head">
@@ -96,7 +104,10 @@ function renderResults(query) {
           ${isLinked ? '<span class="badge linked" title="リンク済み">🔗 リンク</span>' : ''}
           ${entry.protected ? '<span class="badge protected" title="プロテクト中">🔒</span>' : ''}
         </div>
-        ${dateLabel ? `<time class="result-date" datetime="${escapeHtml(entry.capturedAt || '')}" title="保存 ${escapeHtml(dateTitle)}${escapeHtml(updatedTitle)}">${escapeHtml(dateLabel)}</time>` : ''}
+        <div class="result-dates">
+          ${genLabel ? `<time class="result-date result-date-generated" datetime="${escapeHtml(entry.sunoCreatedAt || '')}" title="生成 ${escapeHtml(formatDateTimeFull(entry.sunoCreatedAt))}">${escapeHtml(genLabel)}</time>` : ''}
+          ${dateLabel ? `<time class="result-date" datetime="${escapeHtml(entry.capturedAt || '')}" title="保存 ${escapeHtml(dateTitle)}${escapeHtml(updatedTitle)}${escapeHtml(genTitle)}">${escapeHtml(dateLabel)}</time>` : ''}
+        </div>
       </div>
       <div class="title">${escapeHtml(entry.title || '無題')}</div>
       <div class="snippet">${highlightSnippet(snippet, query, escapeHtml)}</div>
@@ -197,6 +208,11 @@ async function selectEntry(id) {
     selectedEntry.updatedAt.slice(0, 16) !== selectedEntry.capturedAt?.slice(0, 16)
   ) {
     metaParts.push(`更新 ${formatDateTimeFull(selectedEntry.updatedAt)}`);
+  }
+  if (selectedEntry.source === 'suno_song' && selectedEntry.sunoCreatedAt) {
+    const genLabel = formatEntryDate(selectedEntry.sunoCreatedAt);
+    const genFull = formatDateTimeFull(selectedEntry.sunoCreatedAt);
+    metaParts.push(`生成 ${genLabel}（${genFull}）`);
   }
   metaEl.appendChild(document.createTextNode(metaParts.join(' · ')));
   if (selectedEntry.sourceUrl) {

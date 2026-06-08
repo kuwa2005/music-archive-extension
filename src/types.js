@@ -21,6 +21,7 @@
  * @property {string} [listContext]
  * @property {string} [imageUrl]
  * @property {string} capturedAt
+ * @property {string} [sunoCreatedAt]
  * @property {string} [updatedAt]
  * @property {string} [lyricsNorm]
  * @property {string} [titleNorm]

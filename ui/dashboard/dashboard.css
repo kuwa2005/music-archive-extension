@@ -197,11 +197,20 @@ body.layout-resizing * {
   gap: 4px 6px;
   min-width: 0;
 }
-.result-date {
+.result-dates {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
   flex-shrink: 0;
+}
+.result-date {
   font-size: 11px;
   color: var(--color-text-muted);
   white-space: nowrap;
+}
+.result-date-generated {
+  color: var(--color-text-secondary, var(--color-text-muted));
 }
 .result-item:hover, .result-item.active { border-color: #7c5cff; }
 .result-item .title { font-weight: 600; margin-bottom: 4px; line-height: 1.35; }

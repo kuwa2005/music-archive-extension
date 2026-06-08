@@ -6,6 +6,8 @@ import {
   extractStyleFromRoot,
   clickLyricsTab,
   sleep,
+  extractSunoCreatedAtFromDom,
+  fetchSunoClipCreatedAt,
 } from '../lib/suno-selectors.js';
 import { extractLyricsFromPageText } from '../lib/normalize.js';
 
@@ -38,6 +40,11 @@ async function extractSunoSongData() {
     stylePrompt = pickLongestText(document, ['div[title]', 'a[href^="/style/"]']);
   }
 
+  let sunoCreatedAt = extractSunoCreatedAtFromDom(document);
+  if (!sunoCreatedAt && clipId) {
+    sunoCreatedAt = await fetchSunoClipCreatedAt(clipId);
+  }
+
   return {
     source: 'suno_song',
     title: title.replace(/^★\s*/, '').trim(),
@@ -45,6 +52,7 @@ async function extractSunoSongData() {
     stylePrompt: stylePrompt.trim(),
     sourceUrl,
     clipId: clipId || undefined,
+    sunoCreatedAt: sunoCreatedAt || undefined,
     capturedAt: new Date().toISOString(),
   };
 }

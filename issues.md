@@ -6,6 +6,24 @@
 
 ---
 
+## （コミット後にハッシュ追記）— 2026-06-09 — Suno 曲の生成日時を保存・表示
+
+| 項目 | 内容 |
+|------|------|
+| **種別** | enhancement |
+| **症状** | Suno 曲ページを保存しても、楽曲の生成日時（Suno 上の `created_at`）が記録・表示されず、拡張の保存日時（`capturedAt`）しか分からなかった |
+| **原因** | `extractSunoSongData` がタイトル・歌詞・スタイルのみ抽出。曲ページの DOM では通知欄以外に日時要素が無いケースがあり、API フォールバックも未実装だった |
+| **対応内容** | `Entry.sunoCreatedAt`（ISO 8601・任意）を追加。`suno-selectors.js` で DOM 抽出（`time[datetime]`、`p.text-xs.text-foreground-secondary[title*=GMT]` の相対日付、Created ラベル、ページ内 `created_at` JSON）を実装。DOM で取れない場合は `https://studio-api.prod.suno.com/api/clips/{clipId}` の `created_at` をフォールバック取得。`upsertEntry` は初回取得値を保持。ダッシュボード詳細メタと検索カード（生成日＋保存日の2行）に表示。リスト保存時は行 DOM からも試行。`manifest.json` に studio-api の host_permissions を追加 |
+| **関連ファイル** | `src/types.js`, `src/lib/suno-selectors.js`, `src/content/suno-song.js`, `src/content/suno-list.js`, `src/db/repository.js`, `src/ui/dashboard/dashboard.js`, `ui/dashboard/dashboard.css`, `manifest.json`, `dist/*` |
+
+### 生成日時取得のフォールバック順
+
+1. 曲ヒーロー（Add to Playlist / h1 付近）→ `main` 内の `time[datetime]` または `title` に GMT 日時を持つ要素
+2. ページ内スクリプト／HTML の `"created_at":"…"` 文字列
+3. Suno 公開 API `GET /api/clips/{clipId}` の `created_at`（非公開曲などで失敗する場合は未設定のまま）
+
+---
+
 ## 1e7fc71 — 2026-06-09 — メッセージダイアログを設定モーダルと同一スタイルに統一
 
 | 項目 | 内容 |
