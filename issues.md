@@ -6,6 +6,18 @@
 
 ---
 
+## COMMIT_HASH — 2026-06-09 — 日本語表示の Suno 生成日時を DOM から取得
+
+| 項目 | 内容 |
+|------|------|
+| **種別** | bug |
+| **症状** | Suno 曲ページで「2026年5月10日 12:10」のように日本語ロケールで表示される生成日時が `sunoCreatedAt` に保存されない（Custom バッジ付近の `text-foreground-secondary`） |
+| **原因** | `extractDateFromScope` が `time[datetime]` と GMT `title` 付き相対日付（`4 hours ago`）のみ対象。日本語の絶対日時テキストをパースする処理が無かった |
+| **対応内容** | `parseJapaneseDateTimeToIso` を追加（`YYYY年M月D日 H:mm`）。`text-foreground-secondary` 要素・Custom バッジ近傍・ヒーロー内の短い日時テキストから抽出。既存の GMT／API フォールバックは維持。検証用 `scripts/_tmp-parse-song-date.mjs` を追加 |
+| **関連ファイル** | `src/lib/suno-selectors.js`, `scripts/_tmp-parse-song-date.mjs`, `package.json`, `dist/suno-song.js`, `dist/suno-list.js` |
+
+---
+
 ## 96bd0cc — 2026-06-09 — ポップアップ保存通知をタブ中央モーダルに表示
 
 | 項目 | 内容 |

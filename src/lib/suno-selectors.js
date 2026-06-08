@@ -28,6 +28,9 @@ const GMT_TITLE_RE = /^(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun), /;
 /** 相対日付テキスト（例: 4 hours ago） */
 const RELATIVE_AGO_RE = /\bago\b/i;
 
+/** 日本語ロケールの絶対日時（例: 2026年5月10日 12:10） */
+export const JAPANESE_DATETIME_RE = /(\d{4})年(\d{1,2})月(\d{1,2})日\s*(\d{1,2}):(\d{2})/;
+
 const SUNO_CLIP_API = 'https://studio-api.prod.suno.com/api/clips';
 
 /**
@@ -38,6 +41,44 @@ export function parseGmtTitleToIso(title) {
   if (!title || !GMT_TITLE_RE.test(title)) return null;
   const d = new Date(title);
   if (Number.isNaN(d.getTime())) return null;
+  return d.toISOString();
+}
+
+/**
+ * 日本語表示の日時文字列を ISO 8601 に変換（ブラウザのローカルタイムゾーンとして解釈）。
+ * @param {string} text
+ * @returns {string|null}
+ */
+export function parseJapaneseDateTimeToIso(text) {
+  if (!text) return null;
+  const m = text.match(JAPANESE_DATETIME_RE);
+  if (!m) return null;
+  const year = Number(m[1]);
+  const month = Number(m[2]);
+  const day = Number(m[3]);
+  const hour = Number(m[4]);
+  const minute = Number(m[5]);
+  if (
+    month < 1 ||
+    month > 12 ||
+    day < 1 ||
+    day > 31 ||
+    hour < 0 ||
+    hour > 23 ||
+    minute < 0 ||
+    minute > 59
+  ) {
+    return null;
+  }
+  const d = new Date(year, month - 1, day, hour, minute);
+  if (
+    Number.isNaN(d.getTime()) ||
+    d.getFullYear() !== year ||
+    d.getMonth() !== month - 1 ||
+    d.getDate() !== day
+  ) {
+    return null;
+  }
   return d.toISOString();
 }
 
@@ -94,6 +135,49 @@ export function extractDateFromScope(root) {
         return parsed;
       }
     }
+  }
+
+  const jaDateSelectors = [
+    'p.text-xs.text-foreground-secondary',
+    'p[class*="text-xs"][class*="foreground-secondary"]',
+    'span.text-xs.text-foreground-secondary',
+    'span[class*="text-xs"][class*="foreground-secondary"]',
+    'p.text-foreground-secondary',
+    'span.text-foreground-secondary',
+  ];
+
+  for (const sel of jaDateSelectors) {
+    for (const el of root.querySelectorAll(sel)) {
+      const text = (el.textContent || '').trim();
+      if (!text || text.length > 40) continue;
+      const parsed = parseJapaneseDateTimeToIso(text);
+      if (parsed) return parsed;
+      const titleParsed = parseJapaneseDateTimeToIso(el.getAttribute('title') || '');
+      if (titleParsed) return titleParsed;
+    }
+  }
+
+  for (const badge of root.querySelectorAll('span, p, div')) {
+    const badgeText = (badge.textContent || '').trim();
+    if (badgeText !== 'Custom' && !/^Custom$/i.test(badgeText)) continue;
+    const row =
+      badge.closest('[class*="flex"]') ||
+      badge.parentElement?.parentElement ||
+      badge.parentElement;
+    if (!row) continue;
+    for (const el of row.querySelectorAll('span, p, time')) {
+      const text = (el.textContent || '').trim();
+      if (!text || text.length > 40) continue;
+      const parsed = parseJapaneseDateTimeToIso(text);
+      if (parsed) return parsed;
+    }
+  }
+
+  for (const el of root.querySelectorAll('span, p, time')) {
+    const text = (el.textContent || '').trim();
+    if (!JAPANESE_DATETIME_RE.test(text) || text.length > 30) continue;
+    const parsed = parseJapaneseDateTimeToIso(text);
+    if (parsed) return parsed;
   }
 
   for (const el of root.querySelectorAll('span, p, div, dt')) {

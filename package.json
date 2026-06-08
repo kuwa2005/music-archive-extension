@@ -10,7 +10,8 @@
     "package": "node scripts/package-extension.mjs"
   },
   "devDependencies": {
-    "esbuild": "^0.25.0"
+    "esbuild": "^0.25.0",
+    "linkedom": "^0.18.12"
   },
   "dependencies": {
     "dexie": "^4.0.11"
