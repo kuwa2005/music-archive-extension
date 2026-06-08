@@ -271,6 +271,41 @@ button.protect-btn {
   font-weight: 600;
   padding: 0 6px;
 }
+.cleanup-details {
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  margin: 0 0 14px;
+  overflow: hidden;
+}
+.cleanup-details-summary {
+  font-size: 13px;
+  font-weight: 600;
+  padding: 12px 14px;
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+  background: var(--color-surface);
+}
+.cleanup-details-summary::-webkit-details-marker {
+  display: none;
+}
+.cleanup-details-summary::before {
+  display: inline-block;
+  width: 1em;
+  margin-right: 4px;
+  content: '▸';
+  color: var(--color-text-muted);
+}
+.cleanup-details[open] .cleanup-details-summary::before {
+  content: '▾';
+}
+.cleanup-details-summary:hover {
+  background: var(--color-surface-hover);
+}
+.cleanup-details-body {
+  padding: 12px 14px 8px;
+  border-top: 1px solid var(--color-border);
+}
 .cleanup-preset-row {
   display: flex;
   align-items: center;

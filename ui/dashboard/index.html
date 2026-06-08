@@ -163,8 +163,9 @@
             <label class="settings-check"><input id="cleanup-preset-empty" type="checkbox"> 歌詞・プロンプトなし</label>
           </fieldset>
 
-          <fieldset class="cleanup-fieldset">
-            <legend>詳細条件</legend>
+          <details class="cleanup-details">
+            <summary class="cleanup-details-summary">詳細条件</summary>
+            <div class="cleanup-details-body">
             <label class="settings-field">ソース
               <select id="cleanup-source">
                 <option value="">すべて</option>
@@ -212,7 +213,8 @@
               <input id="cleanup-include-protected" type="checkbox">
               プロテクト中のデータも削除する
             </label>
-          </fieldset>
+            </div>
+          </details>
 
           <div class="cleanup-summary">
             <p>削除対象: <strong id="cleanup-count">0</strong> 件</p>
