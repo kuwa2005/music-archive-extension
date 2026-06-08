@@ -38,12 +38,6 @@ async function loadSettings() {
   }
 }
 
-async function saveSetting(key, value) {
-  const patch = { [key]: value };
-  if (key === 'autoSaveAI') patch.autoSaveChatGPT = value;
-  await send('saveSettings', { settings: patch });
-}
-
 function detectCaptureAction(url) {
   if (/suno\.com\/song\//i.test(url)) return 'captureSunoSong';
   if (/suno\.com\/(create|playlist|me)/i.test(url)) return 'captureSunoList';
@@ -85,16 +79,6 @@ document.getElementById('save-current').addEventListener('click', async () => {
 
 document.getElementById('open-dashboard').addEventListener('click', () => {
   chrome.runtime.openOptionsPage();
-});
-
-document.getElementById('auto-suno').addEventListener('change', (e) => {
-  saveSetting('autoSaveSuno', e.target.checked);
-});
-document.getElementById('auto-ai').addEventListener('change', (e) => {
-  saveSetting('autoSaveAI', e.target.checked);
-});
-document.getElementById('auto-list').addEventListener('change', (e) => {
-  saveSetting('autoSaveList', e.target.checked);
 });
 
 refreshCount();

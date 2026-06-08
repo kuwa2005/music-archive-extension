@@ -602,7 +602,7 @@ function showSettingsTab(tab) {
   document.getElementById('settings-panel-data').hidden = tab !== 'data-management';
   document.getElementById('settings-panel-cleanup').hidden = tab !== 'data-cleanup';
   document.getElementById('save-settings-btn').hidden =
-    tab === 'data-management' || tab === 'data-cleanup';
+    tab === 'data-management' || tab === 'data-cleanup' || tab === 'auto-save';
   if (tab === 'data-cleanup') {
     refreshCleanupPreview();
   }
@@ -611,7 +611,7 @@ function showSettingsTab(tab) {
 function openSettingsDialog() {
   resetCleanupDangerChecks();
   loadSettingsUi();
-  showSettingsTab('auto-save');
+  showSettingsTab('auto-link');
   document.getElementById('settings-dialog').hidden = false;
 }
 
@@ -622,16 +622,9 @@ function closeSettingsDialog() {
 
 async function saveCurrentSettingsTab() {
   if (currentSettingsTab === 'auto-save') {
-    const autoSaveAI = document.getElementById('setting-auto-ai').checked;
-    await send('saveSettings', {
-      settings: {
-        autoSaveSuno: document.getElementById('setting-auto-suno').checked,
-        autoSaveAI,
-        autoSaveChatGPT: autoSaveAI,
-        autoSaveList: document.getElementById('setting-auto-list').checked,
-      },
-    });
-  } else {
+    return;
+  }
+  if (currentSettingsTab === 'auto-link') {
     await send('saveSettings', {
       settings: {
         linkThreshold: Number(document.getElementById('setting-threshold').value),
