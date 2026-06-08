@@ -218,10 +218,14 @@ async function selectEntry(id) {
       metaParts.push('生成日時: 未取得（曲ページから再保存で補完できます）');
     }
   }
-  metaEl.appendChild(document.createTextNode(metaParts.join(' · ')));
+  if (metaParts.length) {
+    metaEl.appendChild(document.createTextNode(metaParts.join(' · ')));
+  }
   if (selectedEntry.sourceUrl) {
-    if (metaParts.length) metaEl.appendChild(document.createTextNode(' · '));
-    metaEl.appendChild(createExternalLink(selectedEntry.sourceUrl, selectedEntry.sourceUrl));
+    const urlLine = document.createElement('span');
+    urlLine.className = 'detail-meta-url';
+    urlLine.appendChild(createExternalLink(selectedEntry.sourceUrl, selectedEntry.sourceUrl));
+    metaEl.appendChild(urlLine);
   }
 
   const lyricsParts = [];

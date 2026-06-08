@@ -6,7 +6,19 @@
 
 ---
 
-## （未コミット）— 2026-06-09 — sunoCreatedAt: RSC 埋め込み JSON からの抽出
+## 907f075 — 2026-06-09 — 詳細メタのソース URL を別行表示
+
+| 項目 | 内容 |
+|------|------|
+| **種別** | enhancement |
+| **症状** | ダッシュボード詳細パネルのメタ行で、ソース・保存日時・更新・生成日時とソース URL が ` · ` で同一行に並び、長い URL で読みづらい |
+| **原因** | `selectEntry` が `metaParts` と `sourceUrl` を同じ `<p id="detail-meta">` 内で ` · ` 区切りのテキストノード＋リンクとして連結していた |
+| **対応内容** | メタ情報は従来どおり 1 行目に ` · ` 区切りで表示。`sourceUrl` は `detail-meta-url` ブロック要素（`display: block`）の別行に `createExternalLink` で表示 |
+| **関連ファイル** | `src/ui/dashboard/dashboard.js`, `ui/dashboard/dashboard.css`, `dist/dashboard.js` |
+
+---
+
+## d9f9565 — 2026-06-09 — sunoCreatedAt: RSC 埋め込み JSON からの抽出
 
 | 項目 | 内容 |
 |------|------|

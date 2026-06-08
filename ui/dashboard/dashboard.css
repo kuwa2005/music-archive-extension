@@ -251,6 +251,11 @@ body.layout-resizing * {
   font-size: 13px;
 }
 .meta { font-size: 12px; color: var(--color-text-muted); margin: 0 0 6px; line-height: 1.45; }
+.meta .detail-meta-url {
+  display: block;
+  margin-top: 2px;
+  word-break: break-all;
+}
 .meta a.external-link,
 .linked-chip {
   color: var(--color-link);
