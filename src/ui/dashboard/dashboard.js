@@ -1,6 +1,7 @@
 import { snippetAround } from '../../lib/normalize.js';
 import { getAiLabel, isAiSource } from '../../lib/ai-sources.js';
 import { getSunoSourceLabel, isSunoEntrySource } from '../../lib/suno-sources.js';
+import { initTheme, bindThemeToggle, watchThemeChanges } from '../../lib/theme.js';
 
 /** @type {import('../../types.js').Entry[]} */
 let allResults = [];
@@ -319,3 +320,6 @@ function debounce(fn, ms) {
 }
 
 runSearch();
+initTheme();
+bindThemeToggle();
+watchThemeChanges();

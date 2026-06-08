@@ -1,0 +1,108 @@
+:root,
+[data-theme='dark'] {
+  color-scheme: dark;
+  --color-bg: #0b0d12;
+  --color-surface: #12151c;
+  --color-surface-hover: #151820;
+  --color-border: #252830;
+  --color-border-strong: #333844;
+  --color-text: #e8eaed;
+  --color-text-muted: #9aa0a6;
+  --color-input-bg: #0b0d12;
+  --color-btn-secondary: #2a2d36;
+  --color-link: #9db4ff;
+  --color-link-hover: #c5d4ff;
+  --color-modal-backdrop: rgba(0, 0, 0, 0.65);
+  --color-shadow: rgba(0, 0, 0, 0.45);
+}
+
+[data-theme='light'] {
+  color-scheme: light;
+  --color-bg: #f3f4f6;
+  --color-surface: #ffffff;
+  --color-surface-hover: #f9fafb;
+  --color-border: #e5e7eb;
+  --color-border-strong: #d1d5db;
+  --color-text: #111827;
+  --color-text-muted: #6b7280;
+  --color-input-bg: #ffffff;
+  --color-btn-secondary: #e5e7eb;
+  --color-link: #4f46e5;
+  --color-link-hover: #6366f1;
+  --color-modal-backdrop: rgba(17, 24, 39, 0.35);
+  --color-shadow: rgba(0, 0, 0, 0.12);
+}
+
+.title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.title-row h1 {
+  margin: 0;
+}
+
+.theme-toggle {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 1px solid var(--color-border-strong);
+  border-radius: 999px;
+  background: var(--color-btn-secondary);
+  color: var(--color-text-muted);
+  cursor: pointer;
+}
+
+button.theme-toggle {
+  background: var(--color-btn-secondary);
+  color: var(--color-text-muted);
+  padding: 0;
+  border: 1px solid var(--color-border-strong);
+  border-radius: 999px;
+}
+
+button.theme-toggle:hover {
+  filter: brightness(1.06);
+}
+
+.theme-toggle:hover {
+  filter: brightness(1.06);
+}
+
+.theme-toggle .bulb-glass {
+  fill: currentColor;
+  opacity: 0.5;
+}
+
+.theme-toggle .bulb-base {
+  fill: currentColor;
+  opacity: 0.65;
+}
+
+.theme-toggle.lit {
+  color: #b45309;
+  background: #fef3c7;
+  border-color: #fcd34d;
+}
+
+.theme-toggle.lit .bulb-glass {
+  fill: #fbbf24;
+  opacity: 1;
+  filter: drop-shadow(0 0 4px rgba(251, 191, 36, 0.85));
+}
+
+.theme-toggle.lit .bulb-base {
+  fill: #d97706;
+  opacity: 1;
+}
+
+[data-theme='dark'] .theme-toggle.lit {
+  color: #fbbf24;
+  background: rgba(251, 191, 36, 0.12);
+  border-color: rgba(251, 191, 36, 0.35);
+}

@@ -1,3 +1,5 @@
+import { initTheme, bindThemeToggle, watchThemeChanges } from '../../lib/theme.js';
+
 function send(action, payload = {}) {
   return new Promise((resolve) => {
     chrome.runtime.sendMessage({ action, ...payload }, resolve);
@@ -78,3 +80,6 @@ document.getElementById('auto-list').addEventListener('change', (e) => {
 
 refreshCount();
 loadSettings();
+initTheme();
+bindThemeToggle();
+watchThemeChanges();
