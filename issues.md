@@ -6,6 +6,18 @@
 
 ---
 
+## （コミット後にハッシュ追記） — 2026-06-09 — sunoCreatedAt 再保存時の補完と DOM 抽出強化
+
+| 項目 | 内容 |
+|------|------|
+| **種別** | bug |
+| **症状** | fe7809d 後も Suno 曲ページ保存→ダッシュボード詳細で「生成日時」が表示されない（例: Custom 付近の「2026年5月10日 12:10」） |
+| **原因** | (1) `extractSunoSongData` が歌詞タブクリック後に日時抽出しており、タブ切替でヒーロー付近の日時 DOM が消えるケースで `sunoCreatedAt` が空のまま。(2) `upsertEntry` が `existing?.sunoCreatedAt \|\| data.sunoCreatedAt` で再保存時に新規抽出値が入りにくい。(3) 2026 UI では日時が `div.text-foreground-secondary` 等に載ることがあり、`p`/`span` 限定セレクタでは取りこぼし |
+| **対応内容** | 日時抽出を歌詞タブ切替前に実行（失敗時は後段でも再試行）。`upsertEntry` を `data.sunoCreatedAt \|\| existing?.sunoCreatedAt` に変更し再保存で補完可能に。`div`・広義 `foreground-secondary`・スコープ `innerText` フォールバック、NFKC 正規化を追加。詳細メタに未取得時の案内文を表示。検証スクリプトに div フィクスチャを追加 |
+| **関連ファイル** | `src/content/suno-song.js`, `src/lib/suno-selectors.js`, `src/db/repository.js`, `src/ui/dashboard/dashboard.js`, `scripts/_tmp-parse-song-date.mjs`, `dist/suno-song.js`, `dist/service-worker.js`, `dist/dashboard.js` |
+
+---
+
 ## a9d3475 — 2026-06-09 — ポップアップフォールバック保存ダイアログのスクロール除去
 
 | 項目 | 内容 |

@@ -51,7 +51,8 @@ export function parseGmtTitleToIso(title) {
  */
 export function parseJapaneseDateTimeToIso(text) {
   if (!text) return null;
-  const m = text.match(JAPANESE_DATETIME_RE);
+  const normalized = text.normalize('NFKC').replace(/\u00a0/g, ' ').trim();
+  const m = normalized.match(JAPANESE_DATETIME_RE);
   if (!m) return null;
   const year = Number(m[1]);
   const month = Number(m[2]);
@@ -142,8 +143,12 @@ export function extractDateFromScope(root) {
     'p[class*="text-xs"][class*="foreground-secondary"]',
     'span.text-xs.text-foreground-secondary',
     'span[class*="text-xs"][class*="foreground-secondary"]',
+    'div.text-xs.text-foreground-secondary',
+    'div[class*="text-xs"][class*="foreground-secondary"]',
     'p.text-foreground-secondary',
     'span.text-foreground-secondary',
+    'div.text-foreground-secondary',
+    '[class*="foreground-secondary"]',
   ];
 
   for (const sel of jaDateSelectors) {
@@ -165,7 +170,7 @@ export function extractDateFromScope(root) {
       badge.parentElement?.parentElement ||
       badge.parentElement;
     if (!row) continue;
-    for (const el of row.querySelectorAll('span, p, time')) {
+    for (const el of row.querySelectorAll('span, p, div, time')) {
       const text = (el.textContent || '').trim();
       if (!text || text.length > 40) continue;
       const parsed = parseJapaneseDateTimeToIso(text);
@@ -173,10 +178,17 @@ export function extractDateFromScope(root) {
     }
   }
 
-  for (const el of root.querySelectorAll('span, p, time')) {
+  for (const el of root.querySelectorAll('span, p, div, time')) {
     const text = (el.textContent || '').trim();
-    if (!JAPANESE_DATETIME_RE.test(text) || text.length > 30) continue;
+    if (!JAPANESE_DATETIME_RE.test(text) || text.length > 40) continue;
     const parsed = parseJapaneseDateTimeToIso(text);
+    if (parsed) return parsed;
+  }
+
+  const scopeText = (root.innerText || root.textContent || '').normalize('NFKC');
+  const scopeMatch = scopeText.match(JAPANESE_DATETIME_RE);
+  if (scopeMatch) {
+    const parsed = parseJapaneseDateTimeToIso(scopeMatch[0]);
     if (parsed) return parsed;
   }
 

@@ -209,10 +209,14 @@ async function selectEntry(id) {
   ) {
     metaParts.push(`更新 ${formatDateTimeFull(selectedEntry.updatedAt)}`);
   }
-  if (selectedEntry.source === 'suno_song' && selectedEntry.sunoCreatedAt) {
-    const genLabel = formatEntryDate(selectedEntry.sunoCreatedAt);
-    const genFull = formatDateTimeFull(selectedEntry.sunoCreatedAt);
-    metaParts.push(`生成 ${genLabel}（${genFull}）`);
+  if (selectedEntry.source === 'suno_song') {
+    if (selectedEntry.sunoCreatedAt) {
+      const genLabel = formatEntryDate(selectedEntry.sunoCreatedAt);
+      const genFull = formatDateTimeFull(selectedEntry.sunoCreatedAt);
+      metaParts.push(`生成 ${genLabel}（${genFull}）`);
+    } else {
+      metaParts.push('生成日時: 未取得（曲ページから再保存で補完できます）');
+    }
   }
   metaEl.appendChild(document.createTextNode(metaParts.join(' · ')));
   if (selectedEntry.sourceUrl) {
