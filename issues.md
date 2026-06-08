@@ -20,11 +20,14 @@
 
 ## 811dafd — 2026-06-08 — データ整理・インポート・Suno保存の不具合修正とインポート種別追加
 
+**GitHub Issue:** Fixes #13, #14, #16 / Closes #15
+
 ### 811dafd-1: データ整理 SW/getExtensionInfo 誤検知
 
 | 項目 | 内容 |
 |------|------|
 | **種別** | bug |
+| **GitHub Issue** | #13 |
 | **概要** | データ整理「全データ」選択時に、正常な SW でも「古いバックグラウンド」と誤表示される問題を修正 |
 | **症状・原因** | `ensureCleanupBackendReady` が `getExtensionInfo` で事前チェックし、応答形式やタイミングにより false positive が発生。実際には `previewCleanup` は利用可能だった |
 | **対応内容** | 事前チェックを削除。`send()` で `chrome.runtime.lastError` と空応答を正しく reject。SW に `getExtensionInfo` ハンドラを追加（バージョン確認・`supportsCleanup` 返却） |
@@ -35,6 +38,7 @@
 | 項目 | 内容 |
 |------|------|
 | **種別** | bug |
+| **GitHub Issue** | #14 |
 | **概要** | データ整理タブのプレビューがタブ切替後に更新されない・競合で古い結果が残る問題を修正 |
 | **症状・原因** | `panel.hidden` 判定では設定タブの `currentSettingsTab` と不一致。debounce 中の非同期応答が後から上書き。エラー時のメッセージが不親切 |
 | **対応内容** | `currentSettingsTab === 'data-cleanup'` でガード。`cleanupPreviewRequestId` で競合防止。即時/ debounce 入力を分離。`cleanupBackendErrorMessage` で SW  stale 時の再読み込み案内 |
@@ -45,6 +49,7 @@
 | 項目 | 内容 |
 |------|------|
 | **種別** | enhancement |
+| **GitHub Issue** | Closes #15 |
 | **概要** | JSON インポートに「追加」と「プロテクト除く全件クリア後に取り込み」の 2 モードを追加 |
 | **症状・原因** | 従来は常に upsert のみで、DB を空にしてからリストアする手段がなかった |
 | **対応内容** | UI にラジオボタン（`append` / `replace_except_protected`）。`importAll(data, mode)` で非プロテクト分を削除してから取り込み。確認ダイアログと結果サマリ表示 |
@@ -55,6 +60,7 @@
 | 項目 | 内容 |
 |------|------|
 | **種別** | bug |
+| **GitHub Issue** | #16 |
 | **概要** | Suno 曲ページの content script が `captureSunoSong` 以外のメッセージも `{ success: false }` で応答し、他機能を妨害していた |
 | **症状・原因** | `onMessage` が全 action を受け取り、未対応 action でも `sendResponse({ success: false })` を返していたため、バックグラウンド側の他リスナーと競合 |
 | **対応内容** | `captureSunoSong` 以外は `return false` で委譲。対象 action のみ async で応答 |
