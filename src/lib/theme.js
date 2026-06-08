@@ -26,10 +26,9 @@ export function applyTheme(theme) {
 export function updateThemeToggleUi(theme) {
   const btn = document.getElementById('theme-toggle');
   if (!btn) return;
-  const lit = theme === 'light';
-  btn.classList.toggle('lit', lit);
-  btn.setAttribute('aria-label', lit ? 'ダークモードに切替（電球を消灯）' : 'ライトモードに切替（電球を点灯）');
-  btn.setAttribute('title', lit ? 'ダークモード' : 'ライトモード');
+  const isLight = theme === 'light';
+  btn.setAttribute('aria-label', isLight ? 'ダークモードに切替（月）' : 'ライトモードに切替（太陽）');
+  btn.setAttribute('title', isLight ? 'ダークモード' : 'ライトモード');
 }
 
 /** @returns {Promise<'dark' | 'light'>} */
