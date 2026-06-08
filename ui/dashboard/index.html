@@ -13,11 +13,6 @@
       <p>Suno・主要AI（ChatGPT / Claude / Gemini 等）の歌詞・曲情報を横断検索</p>
     </div>
     <div class="topbar-actions">
-      <button id="export-btn" type="button">エクスポート</button>
-      <label class="file-btn">
-        インポート
-        <input id="import-file" type="file" accept="application/json,.json" hidden>
-      </label>
       <button id="open-settings-btn" type="button" class="secondary">設定</button>
     </div>
   </header>
@@ -87,6 +82,7 @@
       <nav class="settings-tabs" role="tablist" aria-label="設定カテゴリ">
         <button type="button" class="settings-tab active" role="tab" id="settings-tab-auto-save" data-settings-tab="auto-save" aria-selected="true" aria-controls="settings-panel-auto-save">自動保存</button>
         <button type="button" class="settings-tab" role="tab" id="settings-tab-auto-link" data-settings-tab="auto-link" aria-selected="false" aria-controls="settings-panel-auto-link">自動リンク</button>
+        <button type="button" class="settings-tab" role="tab" id="settings-tab-data" data-settings-tab="data-management" aria-selected="false" aria-controls="settings-panel-data">データ管理</button>
       </nav>
       <div class="modal-body">
         <div id="settings-panel-auto-save" class="settings-panel" role="tabpanel" aria-labelledby="settings-tab-auto-save">
@@ -104,6 +100,17 @@
           <label class="settings-field">リンク対象日数
             <input id="setting-window" type="number" min="1" max="365">
           </label>
+        </div>
+
+        <div id="settings-panel-data" class="settings-panel" role="tabpanel" aria-labelledby="settings-tab-data" hidden>
+          <p class="settings-panel-desc">アーカイブデータのバックアップと復元。JSON 形式でエクスポート / インポートします。</p>
+          <div class="settings-data-actions">
+            <button id="export-btn" type="button">エクスポート</button>
+            <label class="file-btn secondary">
+              インポート
+              <input id="import-file" type="file" accept="application/json,.json" hidden>
+            </label>
+          </div>
         </div>
       </div>
       <footer class="modal-footer">

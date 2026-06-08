@@ -223,7 +223,7 @@ document.getElementById('import-file').addEventListener('change', async (e) => {
   e.target.value = '';
 });
 
-/** @type {'auto-save' | 'auto-link'} */
+/** @type {'auto-save' | 'auto-link' | 'data-management'} */
 let currentSettingsTab = 'auto-save';
 
 async function loadSettingsUi() {
@@ -237,7 +237,7 @@ async function loadSettingsUi() {
 }
 
 /**
- * @param {'auto-save' | 'auto-link'} tab
+ * @param {'auto-save' | 'auto-link' | 'data-management'} tab
  */
 function showSettingsTab(tab) {
   currentSettingsTab = tab;
@@ -248,6 +248,8 @@ function showSettingsTab(tab) {
   });
   document.getElementById('settings-panel-auto-save').hidden = tab !== 'auto-save';
   document.getElementById('settings-panel-auto-link').hidden = tab !== 'auto-link';
+  document.getElementById('settings-panel-data').hidden = tab !== 'data-management';
+  document.getElementById('save-settings-btn').hidden = tab === 'data-management';
 }
 
 function openSettingsDialog() {
@@ -291,7 +293,7 @@ document.querySelectorAll('[data-close-settings]').forEach((el) => {
 document.querySelectorAll('.settings-tab').forEach((btn) => {
   btn.addEventListener('click', () => {
     const tab = btn.getAttribute('data-settings-tab');
-    if (tab === 'auto-save' || tab === 'auto-link') {
+    if (tab === 'auto-save' || tab === 'auto-link' || tab === 'data-management') {
       showSettingsTab(tab);
     }
   });

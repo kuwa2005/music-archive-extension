@@ -226,6 +226,11 @@ button.danger { background: #b3261e; }
   color: #e8eaed;
   width: 140px;
 }
+.settings-data-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
 .icon-btn {
   background: transparent;
   color: #9aa0a6;

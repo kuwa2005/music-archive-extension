@@ -47,7 +47,7 @@ npm run watch
 ## データ
 
 - 保存先: ブラウザ内 IndexedDB (`MusicArchiveDB`)
-- バックアップ: ダッシュボードの「エクスポート」で JSON 出力
+- バックアップ: 設定 → **データ管理** タブから JSON エクスポート
 
 ## 注意
 
