@@ -15,6 +15,17 @@ header > p { margin: 6px 0 0; }
 h1 {
   font-size: 15px;
 }
+.popup-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.popup-title-icon {
+  width: 22px;
+  height: 22px;
+  flex: 0 0 auto;
+  border-radius: 6px;
+}
 #count-label {
   font-size: 12px;
   color: var(--color-text-muted);

@@ -22,6 +22,17 @@ body {
 .topbar .title-row + p,
 .topbar > div > p { margin: 4px 0 0; color: var(--color-text-muted); font-size: 13px; }
 .topbar h1 { font-size: 22px; }
+.dashboard-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+.dashboard-title-icon {
+  width: 28px;
+  height: 28px;
+  flex: 0 0 auto;
+  border-radius: 6px;
+}
 .topbar-actions { display: flex; gap: 8px; flex-wrap: wrap; }
 button, .file-btn {
   border: none;

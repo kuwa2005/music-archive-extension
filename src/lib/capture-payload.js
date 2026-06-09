@@ -8,6 +8,10 @@ import { coerceSunoCreatedAt } from './suno-created-at.js';
 export function unwrapCapturePayload(response) {
   if (!response || response.success === false) return null;
 
+  if (Array.isArray(response.data)) {
+    return response.data;
+  }
+
   /** @type {Record<string, unknown>|null} */
   let entry = null;
   if (response.data != null && typeof response.data === 'object' && !Array.isArray(response.data)) {

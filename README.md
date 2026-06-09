@@ -29,14 +29,28 @@ For Chrome Web Store listing, use the GitHub raw or Pages URL of `docs/privacy-p
 
 ### Setup
 
+**From GitHub (developer mode / sideload):**
+
+```powershell
+git clone https://github.com/kuwa2005/music-archive-extension.git
+cd music-archive-extension
+npm install
+npm run icons
+npm run build
+```
+
+Then open `chrome://extensions` → enable **Developer mode** → **Load unpacked** → select the **repository root folder** (the folder that contains `manifest.json`). Do **not** select a parent folder, `src/`, `ui/`, or `release/`.
+
+> **Note:** `dist/` (built JavaScript) is **not** committed to Git. A fresh clone includes `manifest.json` but **will not load in Chrome until you run `npm run build`**. If Chrome reports a manifest or load error, confirm `dist/service-worker.js` exists after the build step.
+
+**Local workspace path example:**
+
 ```powershell
 cd d:\00_project\music-archive-extension
 npm install
 npm run icons
 npm run build
 ```
-
-Load unpacked extension at `chrome://extensions` → Developer mode → select this folder.
 
 ### Usage
 
@@ -85,14 +99,28 @@ After editing `src/`, run `npm run build` and click **Reload** on `chrome://exte
 
 ### セットアップ
 
+**GitHub から clone して開発者モードで読み込む場合:**
+
+```powershell
+git clone https://github.com/kuwa2005/music-archive-extension.git
+cd music-archive-extension
+npm install
+npm run icons
+npm run build
+```
+
+Chrome で `chrome://extensions` →「デベロッパーモード」→「パッケージ化されていない拡張機能を読み込む」→ **`manifest.json` があるリポジトリ直下のフォルダ**を選択（親フォルダや `src/`・`ui/`・`release/` ではない）。
+
+> **注意:** ビルド成果物の `dist/` は Git に含まれていません。clone 直後は `manifest.json` はありますが、**`npm run build` するまで Chrome では読み込めません**。マニフェスト関連のエラーが出たら、ビルド後に `dist/service-worker.js` があるか確認してください。
+
+**ローカル作業パスの例:**
+
 ```powershell
 cd d:\00_project\music-archive-extension
 npm install
 npm run icons
 npm run build
 ```
-
-Chrome で `chrome://extensions` →「デベロッパーモード」→「パッケージ化されていない拡張機能を読み込む」→ このフォルダを選択。
 
 ### 使い方
 
@@ -133,3 +161,4 @@ For the Chrome Web Store **Privacy policy** field, the English GitHub blob URL (
 ### Documentation index
 
 - [docs/README.md](docs/README.md) — all project docs (privacy, CWS checklist, sideload guides)
+

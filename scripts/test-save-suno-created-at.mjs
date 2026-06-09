@@ -55,6 +55,15 @@ function testUnwrapCapturePayload() {
     'flat capture payload unwrapped',
   );
   assert(unwrapCapturePayload({ success: false }) === null, 'failed capture → null');
+  const listEntries = [
+    { source: 'suno_list', title: 'a', clipId: '11111111-1111-1111-1111-111111111111' },
+    { source: 'suno_workspace', title: 'b', clipId: '22222222-2222-2222-2222-222222222222' },
+  ];
+  assert(
+    JSON.stringify(unwrapCapturePayload({ success: true, data: listEntries })) ===
+      JSON.stringify(listEntries),
+    'list capture array payload unwrapped',
+  );
 }
 
 function testResolveSavePayload() {

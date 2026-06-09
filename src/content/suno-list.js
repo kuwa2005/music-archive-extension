@@ -13,8 +13,8 @@ import { sourceFromListContext } from '../lib/suno-sources.js';
 function extractUrlsFromText(text, urlSet) {
   if (!text) return;
   const patterns = [
-    /https?:\/\/suno\.com\/song\/[a-f0-9-]{36}/gi,
-    /\/song\/[a-f0-9-]{36}/gi,
+    /https?:\/\/suno\.com\/(?:song|s)\/[a-f0-9-]{36}/gi,
+    /\/(?:song|s)\/[a-f0-9-]{36}/gi,
   ];
   for (const pattern of patterns) {
     const matches = text.match(pattern);
@@ -24,7 +24,7 @@ function extractUrlsFromText(text, urlSet) {
         const url = match.startsWith('http')
           ? match
           : new URL(match, window.location.origin).href;
-        if (url.includes('/song/')) {
+        if (url.includes('/song/') || /\/s\/[a-f0-9-]{36}/i.test(url)) {
           urlSet.add(url.split('?')[0].split('#')[0]);
         }
       } catch {
@@ -39,7 +39,7 @@ function extractUrlsFromText(text, urlSet) {
  */
 function collectSongUrls() {
   const urls = new Set();
-  document.querySelectorAll('a[href*="/song/"]').forEach((a) => {
+  document.querySelectorAll('a[href*="/song/"], a[href*="/s/"]').forEach((a) => {
     const href = a.href || a.getAttribute('href') || '';
     extractUrlsFromText(href, urls);
   });
@@ -56,9 +56,11 @@ function collectSongUrls() {
  */
 function extractRowMeta(url) {
   const uuid = url.split('/').pop();
-  let link = document.querySelector(`a[href="/song/${uuid}"], a[href*="/song/${uuid}"]`);
+  let link = document.querySelector(
+    `a[href="/song/${uuid}"], a[href*="/song/${uuid}"], a[href="/s/${uuid}"], a[href*="/s/${uuid}"]`,
+  );
   if (!link) {
-    const all = document.querySelectorAll('a[href*="/song/"]');
+    const all = document.querySelectorAll('a[href*="/song/"], a[href*="/s/"]');
     for (const l of all) {
       if ((l.href || '').includes(uuid)) {
         link = l;

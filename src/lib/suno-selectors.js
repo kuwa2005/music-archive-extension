@@ -557,7 +557,7 @@ export async function fetchSunoClipCreatedAt(clipId) {
 export function parseClipIdFromUrl(url) {
   try {
     const u = new URL(url);
-    const m = u.pathname.match(/\/song\/([a-f0-9-]{36})/i);
+    const m = u.pathname.match(/\/(?:song|s)\/([a-f0-9-]{36})/i);
     return m ? m[1] : null;
   } catch {
     return null;
