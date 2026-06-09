@@ -40,6 +40,32 @@ button.secondary {
 }
 button:hover { filter: brightness(1.08); }
 
+.save-status {
+  margin: 0;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.save-status[data-variant="success"] {
+  background: color-mix(in srgb, #22c55e 18%, transparent);
+  color: #86efac;
+}
+
+.save-status[data-variant="error"] {
+  background: color-mix(in srgb, #ef4444 18%, transparent);
+  color: #fca5a5;
+}
+
+html[data-theme="light"] .save-status[data-variant="success"] {
+  color: #166534;
+}
+
+html[data-theme="light"] .save-status[data-variant="error"] {
+  color: #991b1b;
+}
+
 /* Popup fallback message dialog — fit ~320px viewport without scroll for short alerts */
 #message-dialog.modal {
   padding: 6px;

@@ -1,13 +1,15 @@
+import { t } from './i18n.js';
+
 /** @typedef {'suno_song' | 'suno_list' | 'suno_workspace' | 'chatgpt' | 'claude' | 'gemini' | 'copilot' | 'perplexity' | 'poe'} EntrySource */
 
 /** @type {EntrySource[]} */
 export const SUNO_ENTRY_SOURCES = ['suno_song', 'suno_list', 'suno_workspace'];
 
 /** @type {Record<string, string>} */
-export const SUNO_SOURCE_LABELS = {
-  suno_song: 'Suno 曲',
-  suno_workspace: 'Suno ワークスペース',
-  suno_list: 'Suno プレイリスト等',
+const SUNO_SOURCE_MESSAGE_KEYS = {
+  suno_song: 'sourceSunoSong',
+  suno_workspace: 'sourceSunoWorkspace',
+  suno_list: 'sourceSunoList',
 };
 
 /**
@@ -23,7 +25,8 @@ export function isSunoEntrySource(source) {
  * @returns {string}
  */
 export function getSunoSourceLabel(source) {
-  return SUNO_SOURCE_LABELS[source] || source;
+  const key = SUNO_SOURCE_MESSAGE_KEYS[source];
+  return key ? t(key) : source;
 }
 
 /**

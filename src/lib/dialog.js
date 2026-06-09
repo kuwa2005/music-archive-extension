@@ -1,3 +1,5 @@
+import { t } from './i18n.js';
+
 /** @typedef {'alert' | 'confirm'} DialogMode */
 
 const DIALOG_ID = 'message-dialog';
@@ -132,7 +134,7 @@ function processQueue() {
   const cancelBtn = /** @type {HTMLButtonElement | null} */ (root.querySelector('#message-dialog-cancel'));
   const panel = getPanel(root);
 
-  if (titleEl) titleEl.textContent = next.mode === 'confirm' ? '確認' : 'お知らせ';
+  if (titleEl) titleEl.textContent = next.mode === 'confirm' ? t('dialogConfirm') : t('dialogNotice');
   if (textEl) textEl.textContent = next.message;
   if (cancelBtn) cancelBtn.hidden = next.mode !== 'confirm';
 

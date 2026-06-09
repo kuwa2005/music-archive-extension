@@ -1,17 +1,89 @@
-# 楽曲制作アーカイブ Chrome 拡張
+# Music Production Archive / 楽曲制作アーカイブ
 
-Suno の曲ページ・ワークスペース/プレイリスト、および **主要 AI**（ChatGPT / Claude / Gemini / Copilot / Perplexity / Poe）から情報を収集し、IndexedDB に保存。拡張機能内の検索ダッシュボードで歌詞の一部やタイトルから、関連する AI 会話 URL と Suno 曲 URL を横断検索できます。
+Chrome extension to save Suno songs and major AI chats (ChatGPT, Claude, Gemini, Copilot, Perplexity, Poe) locally, link related entries, and search across lyrics and titles.
 
-## 機能
+Suno の曲ページ・ワークスペース/プレイリスト、および主要 AI から情報を**手動保存**し、IndexedDB 上で横断検索できる Chrome 拡張機能です。
 
-- **Suno 曲ページ** (`/song/{uuid}`): タイトル・歌詞・style プロンプトを保存
-- **Suno ワークスペース** (`/create?wid=...`): 曲 URL・タイトル・プロンプトを `suno_workspace` として保存
-- **Suno リスト** (playlist / me): 曲 URL・タイトル・プロンプトを `suno_list` として保存
-- **主要 AI チャット**: ChatGPT / Claude / Gemini / Copilot / Perplexity / Poe — AI名・会話・歌詞を保存
-- **自動リンク**: 歌詞/タイトル類似度で AI チャット ↔ Suno を関連付け
-- **検索ダッシュボード**: 歌詞の一部から横断検索、手動リンク、JSON エクスポート/インポート
+**Repository:** https://github.com/kuwa2005/music-archive-extension
 
-## セットアップ
+---
+
+## English
+
+### Features
+
+- **Suno song pages** (`/song/{uuid}`): title, lyrics, style prompt
+- **Suno workspace** (`/create?wid=...`): song URLs, titles, prompts
+- **Suno lists** (playlist / me): batch save from list pages
+- **Major AI chats**: ChatGPT, Claude, Gemini, Copilot, Perplexity, Poe
+- **Auto-link** (local): similar lyrics/titles between saved AI chats and Suno entries
+- **Search dashboard**: cross-search, manual links, JSON export/import, bulk cleanup
+- **Manual save only**: data is captured **only when you click Save** or use the context menu — no automatic background collection
+
+### Privacy
+
+- [Privacy Policy (English)](docs/privacy-policy.md)
+- [プライバシーポリシー（日本語）](docs/privacy-policy.ja.md)
+
+For Chrome Web Store listing, use the GitHub raw or Pages URL of `docs/privacy-policy.md` (see below).
+
+### Setup
+
+```powershell
+cd d:\00_project\music-archive-extension
+npm install
+npm run icons
+npm run build
+```
+
+Load unpacked extension at `chrome://extensions` → Developer mode → select this folder.
+
+### Usage
+
+1. Open a supported Suno or AI page while logged in
+2. Extension icon → **Save current page**, or use the right-click context menu
+3. Open **Search dashboard** from the popup or context menu
+4. Search by lyrics snippet, title, AI name, or prompt; manage links and backups in **Settings**
+
+### Development
+
+```powershell
+npm run watch
+```
+
+After editing `src/`, run `npm run build` and click **Reload** on `chrome://extensions`.
+
+### Data
+
+- Storage: browser IndexedDB (`MusicArchiveDB`) + `chrome.storage.local` for settings
+- Backup: **Settings → Data management → Export** (JSON)
+
+### Notes
+
+- DOM extraction may break when Suno or AI sites change their UI. Retry manual save after reloading the page.
+- Auto-link uses a similarity threshold (default 0.75), configurable in Settings.
+- UI language follows the browser locale: **English** or **Japanese** (`chrome.i18n`).
+
+---
+
+## 日本語
+
+### 機能
+
+- **Suno 曲ページ** (`/song/{uuid}`): タイトル・歌詞・style プロンプト
+- **Suno ワークスペース** (`/create?wid=...`): 曲 URL・タイトル・プロンプト
+- **Suno リスト** (playlist / me): リストから一括保存
+- **主要 AI チャット**: ChatGPT / Claude / Gemini / Copilot / Perplexity / Poe
+- **自動リンク**（ローカル）: 保存済み AI チャット ↔ Suno の歌詞・タイトル類似マッチ
+- **検索ダッシュボード**: 横断検索、手動リンク、JSON エクスポート/インポート、データ整理
+- **手動保存のみ**: ポップアップまたはコンテキストメニューで保存したときだけデータ取得（自動収集なし）
+
+### プライバシー
+
+- [Privacy Policy (English)](docs/privacy-policy.md)
+- [プライバシーポリシー（日本語）](docs/privacy-policy.ja.md)
+
+### セットアップ
 
 ```powershell
 cd d:\00_project\music-archive-extension
@@ -22,41 +94,42 @@ npm run build
 
 Chrome で `chrome://extensions` →「デベロッパーモード」→「パッケージ化されていない拡張機能を読み込む」→ このフォルダを選択。
 
-## 使い方
+### 使い方
 
 1. Suno / 主要 AI にログインした状態で対象ページを開く
-2. 拡張アイコン →「現在のページを保存」で手動保存
-3. 右クリックメニューからも保存・検索ダッシュボードを開けます
-4. 拡張のオプション（検索ダッシュボード）で歌詞の一部を検索
+2. 拡張アイコン →「現在のページを保存」または右クリックメニュー
+3. ポップアップまたは右クリックから検索ダッシュボードを開く
+4. 設定タブで自動リンク閾値・バックアップ・データ整理
 
 ### 限定配布（Store 公開前）
 
-テスター向けの詳細手順:
+- [限定配布-インストールマニュアル.md](docs/限定配布-インストールマニュアル.md)
+- [限定配布-使用方法マニュアル.md](docs/限定配布-使用方法マニュアル.md)
 
-- [docs/限定配布-インストールマニュアル.md](docs/限定配布-インストールマニュアル.md)
-- [docs/限定配布-使用方法マニュアル.md](docs/限定配布-使用方法マニュアル.md)
+### 開発
 
-## 開発
-
-```powershell
-npm run watch
-```
-
-`src/` を編集後、Chrome の拡張機能ページで「更新」を押してください。
-
-### 開発運用
-
-- 不具合修正・機能改善は **`issues.md`** にコミット単位で記録する（種別・症状・原因・対応・GitHub Issue #）
-- 変更後は **ローカル git コミット**（日本語メッセージ）。`src/` 変更時はコミット前に `npm run build`
-- GitHub への push は区切りがついたタイミングでまとめて行う（毎回 push 不要）
+- 変更記録: [issues.md](issues.md)
 - 詳細ルール: ワークスペース `.cursor/rules/music-archive-extension-workflow.mdc`
+- UI 言語: ブラウザ UI 言語が日本語のとき日本語、それ以外は英語
 
-## データ
+---
 
-- 保存先: ブラウザ内 IndexedDB (`MusicArchiveDB`)
-- バックアップ: 設定 → **データ管理** タブから JSON エクスポート
+## Chrome Web Store / GitHub Pages
 
-## 注意
+**Privacy policy URLs (after push to `master`):**
 
-- Suno / 各 AI サービスの UI 変更により DOM 抽出が失敗する場合があります。その場合は手動保存を試してください。
-- 自動リンクは類似度閾値（既定 0.75）以上の場合のみ作成されます。ダッシュボードの設定で調整できます。
+| Language | GitHub blob |
+|----------|-------------|
+| English | https://github.com/kuwa2005/music-archive-extension/blob/master/docs/privacy-policy.md |
+| Japanese | https://github.com/kuwa2005/music-archive-extension/blob/master/docs/privacy-policy.ja.md |
+
+Optional GitHub Pages (Settings → Pages → branch `master`, folder `/docs`):
+
+- English: `https://kuwa2005.github.io/music-archive-extension/privacy-policy`
+- Japanese: `https://kuwa2005.github.io/music-archive-extension/privacy-policy.ja`
+
+For the Chrome Web Store **Privacy policy** field, the English GitHub blob URL (or Pages URL) is recommended.
+
+### Documentation index
+
+- [docs/README.md](docs/README.md) — all project docs (privacy, CWS checklist, sideload guides)

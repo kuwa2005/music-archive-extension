@@ -1,3 +1,6 @@
+import { coerceSunoCreatedAt } from './suno-created-at.js';
+import { debugLog, debugWarn } from './debug.js';
+
 function sleep(ms) {
   return new Promise((r) => setTimeout(r, ms));
 }
@@ -18,7 +21,7 @@ function isConnectionError(err) {
  * @param {Record<string, unknown>} payload
  * @returns {Promise<{ success?: boolean, data?: unknown, error?: string } | undefined>}
  */
-async function sendTabMessage(tabId, payload) {
+export async function sendTabMessage(tabId, payload) {
   try {
     return await chrome.tabs.sendMessage(tabId, payload);
   } catch (err) {
@@ -45,12 +48,24 @@ export async function captureFromTab(tabId, captureAction, options = {}) {
   const { activateTab = true } = options;
   const message = { action: captureAction };
 
+  debugLog('captureFromTab', { tabId, captureAction, activateTab });
+
   let response = await sendTabMessage(tabId, message);
   if (response?.success !== false && response != null) {
+    debugLog('captureFromTab:ok', {
+      tabId,
+      hasData: response.data != null,
+      sunoCreatedAt: response.data?.sunoCreatedAt ?? response.sunoCreatedAt,
+    });
     return response;
   }
 
   if (!activateTab) {
+    debugWarn('captureFromTab:failed', {
+      tabId,
+      activateTab,
+      error: response?.error || 'capture failed',
+    });
     return response ?? { success: false, error: 'capture failed' };
   }
 
@@ -70,7 +85,11 @@ export async function captureFromTab(tabId, captureAction, options = {}) {
 export async function ensureSunoCreatedAt(tabId, data, options = {}) {
   const { activateTab = true } = options;
   if (data?.source !== 'suno_song') return data;
-  if (typeof data.sunoCreatedAt === 'string' && data.sunoCreatedAt) return data;
+
+  const normalized = coerceSunoCreatedAt(data.sunoCreatedAt);
+  if (normalized) {
+    return { ...data, sunoCreatedAt: normalized };
+  }
 
   try {
     if (activateTab) {
@@ -78,11 +97,12 @@ export async function ensureSunoCreatedAt(tabId, data, options = {}) {
       await sleep(200);
     }
     const retry = await sendTabMessage(tabId, { action: 'getSunoCreatedAt' });
-    if (retry?.success && typeof retry.sunoCreatedAt === 'string' && retry.sunoCreatedAt) {
-      return { ...data, sunoCreatedAt: retry.sunoCreatedAt };
+    const retryDate = coerceSunoCreatedAt(retry?.sunoCreatedAt);
+    if (retry?.success && retryDate) {
+      return { ...data, sunoCreatedAt: retryDate };
     }
   } catch (err) {
-    console.warn('[music-archive] ensureSunoCreatedAt failed', err);
+    debugWarn('ensureSunoCreatedAt failed', err);
   }
   return data;
 }

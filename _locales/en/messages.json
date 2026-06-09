@@ -1,0 +1,619 @@
+{
+  "extName": {
+    "message": "Music Production Archive"
+  },
+  "extDescription": {
+    "message": "Save Suno songs and major AI chats (ChatGPT, Claude, Gemini, etc.) locally and search across lyrics and titles."
+  },
+  "extActionTitle": {
+    "message": "Music Production Archive"
+  },
+  "popupDocTitle": {
+    "message": "Music Production Archive"
+  },
+  "dashboardDocTitle": {
+    "message": "Music Production Archive — Search"
+  },
+  "loading": {
+    "message": "Loading…"
+  },
+  "savedCount": {
+    "message": "Saved entries: $COUNT$",
+    "placeholders": {
+      "count": { "content": "$1", "example": "12" }
+    }
+  },
+  "savedCountUnavailable": {
+    "message": "Saved entries: unavailable"
+  },
+  "savedCountReload": {
+    "message": "Saved entries: unavailable (reload extension)"
+  },
+  "saveCurrentPage": {
+    "message": "Save current page"
+  },
+  "saving": {
+    "message": "Saving…"
+  },
+  "openDashboard": {
+    "message": "Search dashboard"
+  },
+  "dialogNotice": {
+    "message": "Notice"
+  },
+  "dialogConfirm": {
+    "message": "Confirm"
+  },
+  "close": {
+    "message": "Close"
+  },
+  "cancel": {
+    "message": "Cancel"
+  },
+  "ok": {
+    "message": "OK"
+  },
+  "themeLight": {
+    "message": "Light mode"
+  },
+  "themeDark": {
+    "message": "Dark mode"
+  },
+  "themeToggleLight": {
+    "message": "Switch to light mode (sun)"
+  },
+  "themeToggleDark": {
+    "message": "Switch to dark mode (moon)"
+  },
+  "unsupportedPage": {
+    "message": "This page is not supported"
+  },
+  "runOnSupportedPage": {
+    "message": "Open a supported page (Suno / major AI) and try again"
+  },
+  "saveNew": {
+    "message": "Saved as new entry"
+  },
+  "saveOverwrite": {
+    "message": "Saved (updated existing entry)"
+  },
+  "saveMultiple": {
+    "message": "Saved $COUNT$ entries",
+    "placeholders": {
+      "count": { "content": "$1", "example": "3" }
+    }
+  },
+  "saveFailedGeneric": {
+    "message": "Save failed. Try reloading the extension."
+  },
+  "saveFailedWithDetail": {
+    "message": "Save failed: $DETAIL$",
+    "placeholders": {
+      "detail": { "content": "$1", "example": "timeout" }
+    }
+  },
+  "saveFailedCapture": {
+    "message": "Capture failed. Reload the page or update the extension."
+  },
+  "saveFailedCaptureReload": {
+    "message": "Capture failed. Reload the page."
+  },
+  "saveFailedTimeout": {
+    "message": "Save timed out. Check the Service Worker console."
+  },
+  "ctxSaveSunoSong": {
+    "message": "Save this Suno song"
+  },
+  "ctxSaveSunoList": {
+    "message": "Save song list on this page"
+  },
+  "ctxSaveAiChat": {
+    "message": "Save this AI conversation"
+  },
+  "ctxOpenDashboard": {
+    "message": "Search archive"
+  },
+  "notifyAutoLink": {
+    "message": "Auto-linked $COUNT$ related entries to \"$TITLE$\"",
+    "placeholders": {
+      "count": { "content": "$1", "example": "2" },
+      "title": { "content": "$2", "example": "My Song" }
+    }
+  },
+  "untitled": {
+    "message": "Untitled"
+  },
+  "dashboardSubtitle": {
+    "message": "Cross-search lyrics and song info from Suno and major AI (ChatGPT, Claude, Gemini, etc.)"
+  },
+  "manualLinkAdd": {
+    "message": "Add manual link"
+  },
+  "settings": {
+    "message": "Settings"
+  },
+  "searchPlaceholder": {
+    "message": "Lyrics snippet, title, AI name, prompt…"
+  },
+  "filterAllSources": {
+    "message": "All sources"
+  },
+  "filterLinkedOnly": {
+    "message": "Linked only"
+  },
+  "filterGptPlaceholder": {
+    "message": "AI name filter"
+  },
+  "filterGroupSuno": {
+    "message": "Suno"
+  },
+  "filterGroupAi": {
+    "message": "AI chat"
+  },
+  "sourceSunoSong": {
+    "message": "Suno song"
+  },
+  "sourceSunoWorkspace": {
+    "message": "Suno workspace"
+  },
+  "sourceSunoList": {
+    "message": "Suno playlist / list"
+  },
+  "viewModeSwitcherLabel": {
+    "message": "Result view mode"
+  },
+  "viewModeCards": {
+    "message": "Cards"
+  },
+  "viewModeCompact": {
+    "message": "Compact"
+  },
+  "viewModeList": {
+    "message": "List"
+  },
+  "viewModeTreeLinks": {
+    "message": "Tree (links)"
+  },
+  "searchResults": {
+    "message": "Search results"
+  },
+  "multiSelectHint": {
+    "message": "Right-click to link or unlink"
+  },
+  "clearSelection": {
+    "message": "Clear selection"
+  },
+  "detail": {
+    "message": "Details"
+  },
+  "selectFromResults": {
+    "message": "Select an item on the left"
+  },
+  "linkedBadge": {
+    "message": "Linked"
+  },
+  "protectedBadge": {
+    "message": "Protected"
+  },
+  "layoutResizerLabel": {
+    "message": "Resize results and detail panels"
+  },
+  "relatedAiChat": {
+    "message": "Related AI chats"
+  },
+  "relatedSuno": {
+    "message": "Related Suno"
+  },
+  "deleteEntry": {
+    "message": "Delete"
+  },
+  "deleteEntryTitle": {
+    "message": "Delete this entry"
+  },
+  "protectEnable": {
+    "message": "Protect (exclude from bulk delete)"
+  },
+  "protectDisable": {
+    "message": "Remove protection (include in bulk delete)"
+  },
+  "protectActive": {
+    "message": "Protected — click to remove"
+  },
+  "settingsTabAutoLink": {
+    "message": "Auto-link"
+  },
+  "settingsTabData": {
+    "message": "Data management"
+  },
+  "settingsTabCleanup": {
+    "message": "Data cleanup"
+  },
+  "settingsAutoLinkDesc": {
+    "message": "Link Suno songs and AI chats when lyrics or titles are similar."
+  },
+  "settingsAutoLinkThreshold": {
+    "message": "Auto-link threshold"
+  },
+  "settingsAutoLinkWindow": {
+    "message": "Link window (days)"
+  },
+  "settingsDataDesc": {
+    "message": "Back up and restore archive data as JSON."
+  },
+  "importModeLegend": {
+    "message": "Import mode"
+  },
+  "importModeAppend": {
+    "message": "Import (append) — merge with existing data"
+  },
+  "importModeReplace": {
+    "message": "Import (replace) — clear all except protected, then import"
+  },
+  "export": {
+    "message": "Export"
+  },
+  "importChooseFile": {
+    "message": "Choose JSON to import"
+  },
+  "settingsCleanupDesc": {
+    "message": "Bulk-delete entries matching criteria. Protected entries are excluded by default."
+  },
+  "cleanupQuickLegend": {
+    "message": "Quick cleanup"
+  },
+  "cleanupOlderThanSuffix": {
+    "message": "days old (enable checkbox on the left)"
+  },
+  "cleanupPresetUnlinked": {
+    "message": "Unlinked"
+  },
+  "cleanupPresetEmpty": {
+    "message": "No lyrics or prompt"
+  },
+  "cleanupPresetAll": {
+    "message": "All data"
+  },
+  "cleanupDetailsSummary": {
+    "message": "Advanced filters"
+  },
+  "cleanupSourceLabel": {
+    "message": "Source"
+  },
+  "cleanupAll": {
+    "message": "All"
+  },
+  "cleanupLinkLabel": {
+    "message": "Links"
+  },
+  "cleanupLinkAny": {
+    "message": "Any"
+  },
+  "cleanupLinkUnlinked": {
+    "message": "Unlinked"
+  },
+  "cleanupLinkLinked": {
+    "message": "Linked"
+  },
+  "cleanupContentLabel": {
+    "message": "Lyrics / prompt"
+  },
+  "cleanupContentAny": {
+    "message": "Any"
+  },
+  "cleanupContentEmpty": {
+    "message": "Empty"
+  },
+  "cleanupContentHas": {
+    "message": "Has content"
+  },
+  "cleanupDateFrom": {
+    "message": "Saved from"
+  },
+  "cleanupDateTo": {
+    "message": "Saved until"
+  },
+  "cleanupKeywordLabel": {
+    "message": "AI name / keyword"
+  },
+  "cleanupKeywordPlaceholder": {
+    "message": "Title, lyrics, AI name…"
+  },
+  "cleanupIncludeProtected": {
+    "message": "Also delete protected entries"
+  },
+  "cleanupDeleteTarget": {
+    "message": "Entries to delete:"
+  },
+  "cleanupDeleteTargetUnit": {
+    "message": "entries"
+  },
+  "cleanupNoteAllData": {
+    "message": "(All data is targeted; protected entries follow the checkbox above)"
+  },
+  "cleanupNoteProtectedExcluded": {
+    "message": "(Protected entries are excluded)"
+  },
+  "cleanupHintExport": {
+    "message": "We recommend exporting from"
+  },
+  "cleanupHintExportLink": {
+    "message": "Data management"
+  },
+  "cleanupHintExportSuffix": {
+    "message": "before deleting."
+  },
+  "cleanupDeleteBtn": {
+    "message": "Delete matching entries"
+  },
+  "manualLinkTitle": {
+    "message": "Add manual link"
+  },
+  "manualLinkDesc": {
+    "message": "Choose an AI chat and a Suno entry to link."
+  },
+  "manualLinkAiLabel": {
+    "message": "AI chat"
+  },
+  "manualLinkSunoLabel": {
+    "message": "Suno"
+  },
+  "selectAiChat": {
+    "message": "Select AI chat"
+  },
+  "selectSuno": {
+    "message": "Select Suno"
+  },
+  "createLink": {
+    "message": "Create link"
+  },
+  "contextMenuSelected": {
+    "message": "Selected entries"
+  },
+  "contextMenuLink": {
+    "message": "Create links"
+  },
+  "contextMenuUnlink": {
+    "message": "Remove links"
+  },
+  "contextMenuUnlinkAll": {
+    "message": "Remove all links"
+  },
+  "contextMenuUnlinkAllTitle": {
+    "message": "Remove all links for this entry"
+  },
+  "contextMenuLinkTitle": {
+    "message": "Link selected AI chats and Suno entries (all pairs)"
+  },
+  "contextMenuLinkNeedBoth": {
+    "message": "Select at least one AI chat and one Suno entry"
+  },
+  "contextMenuUnlinkTitle": {
+    "message": "Remove $COUNT$ links among $ENTRIES$ selected entries",
+    "placeholders": {
+      "count": { "content": "$1", "example": "2" },
+      "entries": { "content": "$2", "example": "4" }
+    }
+  },
+  "contextMenuUnlinkNone": {
+    "message": "No links among selected entries"
+  },
+  "linkNeedBothTypes": {
+    "message": "Select at least one AI chat and one Suno entry to link"
+  },
+  "linkAllAlreadyLinked": {
+    "message": "All selected pairs are already linked"
+  },
+  "linkCreatedCount": {
+    "message": "Created $COUNT$ links",
+    "placeholders": {
+      "count": { "content": "$1", "example": "3" }
+    }
+  },
+  "linkSkippedNote": {
+    "message": " ($SKIPPED$ skipped as existing)",
+    "placeholders": {
+      "skipped": { "content": "$1", "example": "2" }
+    }
+  },
+  "linkNoneBetween": {
+    "message": "No links among selected entries"
+  },
+  "linkRemovedCount": {
+    "message": "Removed $COUNT$ links",
+    "placeholders": {
+      "count": { "content": "$1", "example": "2" }
+    }
+  },
+  "linkNoneToRemove": {
+    "message": "No links to remove"
+  },
+  "linkNoneOnEntry": {
+    "message": "This entry has no links"
+  },
+  "linkRemovedAllCount": {
+    "message": "Removed all $COUNT$ links",
+    "placeholders": {
+      "count": { "content": "$1", "example": "3" }
+    }
+  },
+  "selectBoth": {
+    "message": "Select both entries"
+  },
+  "linkCreated": {
+    "message": "Link created"
+  },
+  "confirmDeleteProtected": {
+    "message": "This entry is protected. Delete anyway?"
+  },
+  "confirmDeleteEntry": {
+    "message": "Delete this entry?"
+  },
+  "importResultEntries": {
+    "message": "Imported: $ENTRIES$ entries, $LINKS$ links",
+    "placeholders": {
+      "entries": { "content": "$1", "example": "10" },
+      "links": { "content": "$2", "example": "5" }
+    }
+  },
+  "importResultCleared": {
+    "message": "Cleared: $ENTRIES$ entries, $LINKS$ links (kept $PROTECTED$ protected)",
+    "placeholders": {
+      "entries": { "content": "$1", "example": "10" },
+      "links": { "content": "$2", "example": "5" },
+      "protected": { "content": "$3", "example": "2" }
+    }
+  },
+  "importConfirmReplace": {
+    "message": "Existing data will be deleted before import.\nOnly protected entries will remain.\n\nContinue?"
+  },
+  "importFailed": {
+    "message": "Import failed: $DETAIL$",
+    "placeholders": {
+      "detail": { "content": "$1", "example": "invalid JSON" }
+    }
+  },
+  "importComplete": {
+    "message": "Import complete\n$SUMMARY$",
+    "placeholders": {
+      "summary": { "content": "$1", "example": "Imported: 10 entries" }
+    }
+  },
+  "unknownError": {
+    "message": "Unknown error"
+  },
+  "cleanupPreviewNeedCriteria": {
+    "message": "Choose a quick cleanup preset or advanced filters"
+  },
+  "cleanupPreviewFailed": {
+    "message": "Preview failed: $DETAIL$",
+    "placeholders": {
+      "detail": { "content": "$1", "example": "timeout" }
+    }
+  },
+  "cleanupNoMatches": {
+    "message": "No matching entries"
+  },
+  "cleanupMoreCount": {
+    "message": "…and $COUNT$ more",
+    "placeholders": {
+      "count": { "content": "$1", "example": "12" }
+    }
+  },
+  "cleanupConfirmDelete": {
+    "message": "Delete $COUNT$ entries?",
+    "placeholders": {
+      "count": { "content": "$1", "example": "10" }
+    }
+  },
+  "cleanupConfirmDeleteIrreversible": {
+    "message": "Delete $COUNT$ entries? This cannot be undone.",
+    "placeholders": {
+      "count": { "content": "$1", "example": "50" }
+    }
+  },
+  "cleanupConfirmIncludesProtected": {
+    "message": "\n(Including protected entries)"
+  },
+  "cleanupConfirmDeleteAll": {
+    "message": "Delete all $COUNT$ archive entries? This cannot be undone.",
+    "placeholders": {
+      "count": { "content": "$1", "example": "100" }
+    }
+  },
+  "cleanupDeletedCount": {
+    "message": "Deleted $COUNT$ entries",
+    "placeholders": {
+      "count": { "content": "$1", "example": "10" }
+    }
+  },
+  "settingsSaved": {
+    "message": "Settings saved"
+  },
+  "backendCleanupUnavailable": {
+    "message": "Background did not respond to cleanup API.$HINT$ Reload \"Music Production Archive\" on chrome://extensions.",
+    "placeholders": {
+      "hint": { "content": "$1", "example": " (v1.2.3)" }
+    }
+  },
+  "backendVersionHint": {
+    "message": " (backend v$VERSION$, cleanup API: $STATUS$)",
+    "placeholders": {
+      "version": { "content": "$1", "example": "1.2.3" },
+      "status": { "content": "$2", "example": "yes" }
+    }
+  },
+  "backendVersionYes": {
+    "message": "available"
+  },
+  "backendVersionNo": {
+    "message": "unavailable"
+  },
+  "backendVersionUnknown": {
+    "message": " (could not reach background)"
+  },
+  "backendReloadTabsHint": {
+    "message": "If Suno / AI tabs are open, reload them after reloading the extension."
+  },
+  "backendDevRebuildHint": {
+    "message": "If developing locally, run npm run build and reload the extension."
+  },
+  "backendSwUnavailable": {
+    "message": "Cannot connect to background (Service Worker). Reload the extension on chrome://extensions."
+  },
+  "dateToday": {
+    "message": "Today"
+  },
+  "dateYesterday": {
+    "message": "Yesterday"
+  },
+  "dateDaysAgo": {
+    "message": "$DAYS$ days ago",
+    "placeholders": {
+      "days": { "content": "$1", "example": "3" }
+    }
+  },
+  "dateUnknown": {
+    "message": "Unknown date"
+  },
+  "savedAtPrefix": {
+    "message": "Saved"
+  },
+  "updatedPrefix": {
+    "message": "Updated"
+  },
+  "generatedPrefix": {
+    "message": "Generated"
+  },
+  "generatedUnknown": {
+    "message": "Generated: unknown"
+  },
+  "generatedAtLabel": {
+    "message": "Generated $REL$ ($FULL$)",
+    "placeholders": {
+      "rel": { "content": "$1", "example": "Today" },
+      "full": { "content": "$2", "example": "2026-01-01 12:00" }
+    }
+  },
+  "noLyrics": {
+    "message": "(No lyrics)"
+  },
+  "unlinkedSection": {
+    "message": "Unlinked"
+  },
+  "similarClusterCount": {
+    "message": "Similar: $COUNT$ entries",
+    "placeholders": {
+      "count": { "content": "$1", "example": "3" }
+    }
+  },
+  "similarClusterTitle": {
+    "message": "Similar: $TITLE$ ($COUNT$ entries)",
+    "placeholders": {
+      "title": { "content": "$1", "example": "My Song" },
+      "count": { "content": "$2", "example": "3" }
+    }
+  },
+  "save": {
+    "message": "Save"
+  }
+}

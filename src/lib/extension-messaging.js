@@ -138,11 +138,11 @@ async function wakeBackground(retryDelayMs) {
 /**
  * @param {string} action
  * @param {Record<string, unknown>} [payload]
- * @param {{ retries?: number, retryDelayMs?: number, wake?: boolean }} [options]
+ * @param {{ retries?: number, retryDelayMs?: number, wake?: boolean, timeoutMs?: number }} [options]
  * @returns {Promise<ExtensionResponse>}
  */
 export async function sendToBackground(action, payload = {}, options = {}) {
-  const { retries = 4, retryDelayMs = 250, wake = true } = options;
+  const { retries = 4, retryDelayMs = 250, wake = true, timeoutMs = 10000 } = options;
   const message = { _target: BACKGROUND_TARGET, action, ...payload };
   /** @type {ExtensionResponse} */
   let last = { success: false, error: 'no response from extension background' };
@@ -163,7 +163,7 @@ export async function sendToBackground(action, payload = {}, options = {}) {
     }
   }
 
-  const portRes = await sendViaBackgroundPort(message);
+  const portRes = await sendViaBackgroundPort(message, timeoutMs);
   const portShouldRetry =
     isRetryableResponse(portRes) || isConnectionError(String(portRes.error || ''));
   if (!portShouldRetry) return portRes;

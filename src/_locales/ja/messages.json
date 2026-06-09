@@ -1,0 +1,619 @@
+{
+  "extName": {
+    "message": "楽曲制作アーカイブ"
+  },
+  "extDescription": {
+    "message": "Suno・主要AI（ChatGPT/Claude/Gemini等）から曲情報・歌詞を収集し、横断検索で一元管理"
+  },
+  "extActionTitle": {
+    "message": "楽曲制作アーカイブ"
+  },
+  "popupDocTitle": {
+    "message": "楽曲制作アーカイブ"
+  },
+  "dashboardDocTitle": {
+    "message": "楽曲制作アーカイブ — 検索"
+  },
+  "loading": {
+    "message": "読み込み中…"
+  },
+  "savedCount": {
+    "message": "保存件数: $COUNT$ 件",
+    "placeholders": {
+      "count": { "content": "$1", "example": "12" }
+    }
+  },
+  "savedCountUnavailable": {
+    "message": "保存件数: 取得できません"
+  },
+  "savedCountReload": {
+    "message": "保存件数: 取得できません（再読み込み）"
+  },
+  "saveCurrentPage": {
+    "message": "現在のページを保存"
+  },
+  "saving": {
+    "message": "保存中…"
+  },
+  "openDashboard": {
+    "message": "検索ダッシュボード"
+  },
+  "dialogNotice": {
+    "message": "お知らせ"
+  },
+  "dialogConfirm": {
+    "message": "確認"
+  },
+  "close": {
+    "message": "閉じる"
+  },
+  "cancel": {
+    "message": "キャンセル"
+  },
+  "ok": {
+    "message": "OK"
+  },
+  "themeLight": {
+    "message": "ライトモード"
+  },
+  "themeDark": {
+    "message": "ダークモード"
+  },
+  "themeToggleLight": {
+    "message": "ライトモードに切替（太陽）"
+  },
+  "themeToggleDark": {
+    "message": "ダークモードに切替（月）"
+  },
+  "unsupportedPage": {
+    "message": "このページは未対応です"
+  },
+  "runOnSupportedPage": {
+    "message": "対応ページ（Suno / 主要AI）で実行してください"
+  },
+  "saveNew": {
+    "message": "新規保存しました"
+  },
+  "saveOverwrite": {
+    "message": "上書き保存しました"
+  },
+  "saveMultiple": {
+    "message": "$COUNT$ 件を保存しました",
+    "placeholders": {
+      "count": { "content": "$1", "example": "3" }
+    }
+  },
+  "saveFailedGeneric": {
+    "message": "保存に失敗しました。拡張機能を更新してください"
+  },
+  "saveFailedWithDetail": {
+    "message": "保存に失敗しました: $DETAIL$",
+    "placeholders": {
+      "detail": { "content": "$1", "example": "timeout" }
+    }
+  },
+  "saveFailedCapture": {
+    "message": "取得に失敗しました。ページを再読み込みするか、拡張機能を更新してください"
+  },
+  "saveFailedCaptureReload": {
+    "message": "取得に失敗しました。ページを再読み込みしてください"
+  },
+  "saveFailedTimeout": {
+    "message": "保存がタイムアウトしました。Service Worker コンソールを確認してください"
+  },
+  "ctxSaveSunoSong": {
+    "message": "この Suno 曲を保存"
+  },
+  "ctxSaveSunoList": {
+    "message": "このページの曲リストを保存"
+  },
+  "ctxSaveAiChat": {
+    "message": "この AI 会話を保存"
+  },
+  "ctxOpenDashboard": {
+    "message": "アーカイブを検索"
+  },
+  "notifyAutoLink": {
+    "message": "「$TITLE$」に $COUNT$ 件の関連を自動リンクしました",
+    "placeholders": {
+      "count": { "content": "$1", "example": "2" },
+      "title": { "content": "$2", "example": "曲名" }
+    }
+  },
+  "untitled": {
+    "message": "無題"
+  },
+  "dashboardSubtitle": {
+    "message": "Suno・主要AI（ChatGPT / Claude / Gemini 等）の歌詞・曲情報を横断検索"
+  },
+  "manualLinkAdd": {
+    "message": "手動リンク追加"
+  },
+  "settings": {
+    "message": "設定"
+  },
+  "searchPlaceholder": {
+    "message": "歌詞の一部、タイトル、AI名、プロンプト…"
+  },
+  "filterAllSources": {
+    "message": "すべてのソース"
+  },
+  "filterLinkedOnly": {
+    "message": "リンク済みのみ"
+  },
+  "filterGptPlaceholder": {
+    "message": "AI名 / GPT名フィルタ"
+  },
+  "filterGroupSuno": {
+    "message": "Suno"
+  },
+  "filterGroupAi": {
+    "message": "AI チャット"
+  },
+  "sourceSunoSong": {
+    "message": "Suno 曲"
+  },
+  "sourceSunoWorkspace": {
+    "message": "Suno ワークスペース"
+  },
+  "sourceSunoList": {
+    "message": "Suno プレイリスト等"
+  },
+  "viewModeSwitcherLabel": {
+    "message": "検索結果の表示形式"
+  },
+  "viewModeCards": {
+    "message": "カード"
+  },
+  "viewModeCompact": {
+    "message": "コンパクト"
+  },
+  "viewModeList": {
+    "message": "一覧"
+  },
+  "viewModeTreeLinks": {
+    "message": "ツリー（リンク）"
+  },
+  "searchResults": {
+    "message": "検索結果"
+  },
+  "multiSelectHint": {
+    "message": "右クリックでリンクを設定・解除"
+  },
+  "clearSelection": {
+    "message": "選択解除"
+  },
+  "detail": {
+    "message": "詳細"
+  },
+  "selectFromResults": {
+    "message": "左の結果を選択してください"
+  },
+  "linkedBadge": {
+    "message": "リンク"
+  },
+  "protectedBadge": {
+    "message": "プロテクト中"
+  },
+  "layoutResizerLabel": {
+    "message": "検索結果と詳細の幅を調整"
+  },
+  "relatedAiChat": {
+    "message": "関連 AI チャット"
+  },
+  "relatedSuno": {
+    "message": "関連 Suno"
+  },
+  "deleteEntry": {
+    "message": "削除"
+  },
+  "deleteEntryTitle": {
+    "message": "このエントリを削除"
+  },
+  "protectEnable": {
+    "message": "プロテクト（一括削除から除外）"
+  },
+  "protectDisable": {
+    "message": "プロテクト解除（一括削除の対象に含める）"
+  },
+  "protectActive": {
+    "message": "プロテクト中 — クリックで解除"
+  },
+  "settingsTabAutoLink": {
+    "message": "自動リンク"
+  },
+  "settingsTabData": {
+    "message": "データ管理"
+  },
+  "settingsTabCleanup": {
+    "message": "データ整理"
+  },
+  "settingsAutoLinkDesc": {
+    "message": "Suno 曲と AI チャットの歌詞・タイトル類似度で関連付けます。"
+  },
+  "settingsAutoLinkThreshold": {
+    "message": "自動リンク閾値"
+  },
+  "settingsAutoLinkWindow": {
+    "message": "リンク対象日数"
+  },
+  "settingsDataDesc": {
+    "message": "アーカイブデータのバックアップと復元。JSON 形式でエクスポート / インポートします。"
+  },
+  "importModeLegend": {
+    "message": "インポート種別"
+  },
+  "importModeAppend": {
+    "message": "インポート（追加）— 既存データに上書き・追加"
+  },
+  "importModeReplace": {
+    "message": "インポート（全件クリアして追加）— プロテクト中のみ残してから取り込み"
+  },
+  "export": {
+    "message": "エクスポート"
+  },
+  "importChooseFile": {
+    "message": "JSON を選択してインポート"
+  },
+  "settingsCleanupDesc": {
+    "message": "条件に合うデータを一括削除します。プロテクト中のデータは既定では除外されます。"
+  },
+  "cleanupQuickLegend": {
+    "message": "クイック整理"
+  },
+  "cleanupOlderThanSuffix": {
+    "message": "日より古い（左のチェックで有効）"
+  },
+  "cleanupPresetUnlinked": {
+    "message": "リンクなし"
+  },
+  "cleanupPresetEmpty": {
+    "message": "歌詞・プロンプトなし"
+  },
+  "cleanupPresetAll": {
+    "message": "全データ"
+  },
+  "cleanupDetailsSummary": {
+    "message": "詳細条件"
+  },
+  "cleanupSourceLabel": {
+    "message": "ソース"
+  },
+  "cleanupAll": {
+    "message": "すべて"
+  },
+  "cleanupLinkLabel": {
+    "message": "リンク"
+  },
+  "cleanupLinkAny": {
+    "message": "すべて"
+  },
+  "cleanupLinkUnlinked": {
+    "message": "リンクなし"
+  },
+  "cleanupLinkLinked": {
+    "message": "リンクあり"
+  },
+  "cleanupContentLabel": {
+    "message": "歌詞・プロンプト"
+  },
+  "cleanupContentAny": {
+    "message": "すべて"
+  },
+  "cleanupContentEmpty": {
+    "message": "なし"
+  },
+  "cleanupContentHas": {
+    "message": "あり"
+  },
+  "cleanupDateFrom": {
+    "message": "保存日（から）"
+  },
+  "cleanupDateTo": {
+    "message": "保存日（まで）"
+  },
+  "cleanupKeywordLabel": {
+    "message": "AI名 / キーワード"
+  },
+  "cleanupKeywordPlaceholder": {
+    "message": "タイトル・歌詞・AI名…"
+  },
+  "cleanupIncludeProtected": {
+    "message": "プロテクト中のデータも削除する"
+  },
+  "cleanupDeleteTarget": {
+    "message": "削除対象:"
+  },
+  "cleanupDeleteTargetUnit": {
+    "message": "件"
+  },
+  "cleanupNoteAllData": {
+    "message": "（全データが対象です。プロテクト分は除外設定に従います）"
+  },
+  "cleanupNoteProtectedExcluded": {
+    "message": "（プロテクト分は除外されています）"
+  },
+  "cleanupHintExport": {
+    "message": "削除前に"
+  },
+  "cleanupHintExportLink": {
+    "message": "データ管理"
+  },
+  "cleanupHintExportSuffix": {
+    "message": "からエクスポートすることを推奨します。"
+  },
+  "cleanupDeleteBtn": {
+    "message": "この条件で削除"
+  },
+  "manualLinkTitle": {
+    "message": "手動リンク追加"
+  },
+  "manualLinkDesc": {
+    "message": "AI チャットと Suno 曲を選んで関連付けます。"
+  },
+  "manualLinkAiLabel": {
+    "message": "AI チャット"
+  },
+  "manualLinkSunoLabel": {
+    "message": "Suno"
+  },
+  "selectAiChat": {
+    "message": "AI チャットを選択"
+  },
+  "selectSuno": {
+    "message": "Suno を選択"
+  },
+  "createLink": {
+    "message": "リンク作成"
+  },
+  "contextMenuSelected": {
+    "message": "選択したエントリ"
+  },
+  "contextMenuLink": {
+    "message": "リンクを設定"
+  },
+  "contextMenuUnlink": {
+    "message": "リンクを解除"
+  },
+  "contextMenuUnlinkAll": {
+    "message": "すべてのリンクを解除"
+  },
+  "contextMenuUnlinkAllTitle": {
+    "message": "このエントリに紐づくリンクをすべて解除"
+  },
+  "contextMenuLinkTitle": {
+    "message": "選択した AI チャットと Suno を相互リンク（全組み合わせ）"
+  },
+  "contextMenuLinkNeedBoth": {
+    "message": "AI チャットと Suno をそれぞれ1件以上選んでください"
+  },
+  "contextMenuUnlinkTitle": {
+    "message": "選択した $ENTRIES$ 件の間にあるリンク $COUNT$ 件を解除",
+    "placeholders": {
+      "count": { "content": "$1", "example": "2" },
+      "entries": { "content": "$2", "example": "4" }
+    }
+  },
+  "contextMenuUnlinkNone": {
+    "message": "選択したエントリ間にリンクがありません"
+  },
+  "linkNeedBothTypes": {
+    "message": "リンクには AI チャットと Suno の両方を1件以上選んでください"
+  },
+  "linkAllAlreadyLinked": {
+    "message": "選択した組み合わせはすべて既にリンク済みです"
+  },
+  "linkCreatedCount": {
+    "message": "リンクを $COUNT$ 件作成しました",
+    "placeholders": {
+      "count": { "content": "$1", "example": "3" }
+    }
+  },
+  "linkSkippedNote": {
+    "message": "（$SKIPPED$ 件は既存のためスキップ）",
+    "placeholders": {
+      "skipped": { "content": "$1", "example": "2" }
+    }
+  },
+  "linkNoneBetween": {
+    "message": "選択したエントリ間にリンクがありません"
+  },
+  "linkRemovedCount": {
+    "message": "リンクを $COUNT$ 件解除しました",
+    "placeholders": {
+      "count": { "content": "$1", "example": "2" }
+    }
+  },
+  "linkNoneToRemove": {
+    "message": "解除対象のリンクがありませんでした"
+  },
+  "linkNoneOnEntry": {
+    "message": "このエントリにリンクがありません"
+  },
+  "linkRemovedAllCount": {
+    "message": "リンクを $COUNT$ 件すべて解除しました",
+    "placeholders": {
+      "count": { "content": "$1", "example": "3" }
+    }
+  },
+  "selectBoth": {
+    "message": "両方選択してください"
+  },
+  "linkCreated": {
+    "message": "リンクを作成しました"
+  },
+  "confirmDeleteProtected": {
+    "message": "プロテクト中のデータです。本当に削除しますか？"
+  },
+  "confirmDeleteEntry": {
+    "message": "このエントリを削除しますか？"
+  },
+  "importResultEntries": {
+    "message": "取り込み: エントリ $ENTRIES$ 件、リンク $LINKS$ 件",
+    "placeholders": {
+      "entries": { "content": "$1", "example": "10" },
+      "links": { "content": "$2", "example": "5" }
+    }
+  },
+  "importResultCleared": {
+    "message": "削除: エントリ $ENTRIES$ 件、リンク $LINKS$ 件（プロテクト $PROTECTED$ 件は保持）",
+    "placeholders": {
+      "entries": { "content": "$1", "example": "10" },
+      "links": { "content": "$2", "example": "5" },
+      "protected": { "content": "$3", "example": "2" }
+    }
+  },
+  "importConfirmReplace": {
+    "message": "既存データを削除してからインポートします。\nプロテクト中のデータのみ残ります。\n\n続行しますか？"
+  },
+  "importFailed": {
+    "message": "インポートに失敗しました: $DETAIL$",
+    "placeholders": {
+      "detail": { "content": "$1", "example": "invalid JSON" }
+    }
+  },
+  "importComplete": {
+    "message": "インポート完了\n$SUMMARY$",
+    "placeholders": {
+      "summary": { "content": "$1", "example": "取り込み: 10 件" }
+    }
+  },
+  "unknownError": {
+    "message": "不明なエラー"
+  },
+  "cleanupPreviewNeedCriteria": {
+    "message": "クイック整理または詳細条件を指定してください"
+  },
+  "cleanupPreviewFailed": {
+    "message": "プレビュー取得に失敗しました: $DETAIL$",
+    "placeholders": {
+      "detail": { "content": "$1", "example": "timeout" }
+    }
+  },
+  "cleanupNoMatches": {
+    "message": "該当データはありません"
+  },
+  "cleanupMoreCount": {
+    "message": "…他 $COUNT$ 件",
+    "placeholders": {
+      "count": { "content": "$1", "example": "12" }
+    }
+  },
+  "cleanupConfirmDelete": {
+    "message": "$COUNT$ 件のデータを削除します。よろしいですか？",
+    "placeholders": {
+      "count": { "content": "$1", "example": "10" }
+    }
+  },
+  "cleanupConfirmDeleteIrreversible": {
+    "message": "$COUNT$ 件のデータを削除します。この操作は取り消せません。続行しますか？",
+    "placeholders": {
+      "count": { "content": "$1", "example": "50" }
+    }
+  },
+  "cleanupConfirmIncludesProtected": {
+    "message": "\n（プロテクト中のデータも含まれます）"
+  },
+  "cleanupConfirmDeleteAll": {
+    "message": "アーカイブの全データ $COUNT$ 件を削除します。この操作は取り消せません。続行しますか？",
+    "placeholders": {
+      "count": { "content": "$1", "example": "100" }
+    }
+  },
+  "cleanupDeletedCount": {
+    "message": "$COUNT$ 件を削除しました",
+    "placeholders": {
+      "count": { "content": "$1", "example": "10" }
+    }
+  },
+  "settingsSaved": {
+    "message": "設定を保存しました"
+  },
+  "backendCleanupUnavailable": {
+    "message": "バックグラウンドがデータ整理 API に応答しませんでした。$HINT$ chrome://extensions を開き「楽曲制作アーカイブ」の再読み込みを押してください。",
+    "placeholders": {
+      "hint": { "content": "$1", "example": " (v1.2.3)" }
+    }
+  },
+  "backendVersionHint": {
+    "message": "（バックエンド報告 v$VERSION$、データ整理 API: $STATUS$）",
+    "placeholders": {
+      "version": { "content": "$1", "example": "1.2.3" },
+      "status": { "content": "$2", "example": "あり" }
+    }
+  },
+  "backendVersionYes": {
+    "message": "あり"
+  },
+  "backendVersionNo": {
+    "message": "なし"
+  },
+  "backendVersionUnknown": {
+    "message": "（バックエンドに接続できませんでした）"
+  },
+  "backendReloadTabsHint": {
+    "message": "Suno / AI チャットのタブを開いている場合は、拡張機能の再読み込み後にそれらのタブも更新（F5）してください。"
+  },
+  "backendDevRebuildHint": {
+    "message": "開発中の場合は npm run build 後に拡張機能を再読み込みしてください。"
+  },
+  "backendSwUnavailable": {
+    "message": "バックグラウンド（Service Worker）に接続できません。chrome://extensions で拡張機能を再読み込みしてください。"
+  },
+  "dateToday": {
+    "message": "今日"
+  },
+  "dateYesterday": {
+    "message": "昨日"
+  },
+  "dateDaysAgo": {
+    "message": "$DAYS$日前",
+    "placeholders": {
+      "days": { "content": "$1", "example": "3" }
+    }
+  },
+  "dateUnknown": {
+    "message": "日付不明"
+  },
+  "savedAtPrefix": {
+    "message": "保存"
+  },
+  "updatedPrefix": {
+    "message": "更新"
+  },
+  "generatedPrefix": {
+    "message": "生成"
+  },
+  "generatedUnknown": {
+    "message": "生成日時: 不明"
+  },
+  "generatedAtLabel": {
+    "message": "生成 $REL$（$FULL$）",
+    "placeholders": {
+      "rel": { "content": "$1", "example": "今日" },
+      "full": { "content": "$2", "example": "2026-01-01 12:00" }
+    }
+  },
+  "noLyrics": {
+    "message": "(歌詞なし)"
+  },
+  "unlinkedSection": {
+    "message": "未リンク"
+  },
+  "similarClusterCount": {
+    "message": "類似: $COUNT$ 件",
+    "placeholders": {
+      "count": { "content": "$1", "example": "3" }
+    }
+  },
+  "similarClusterTitle": {
+    "message": "類似: $TITLE$（$COUNT$ 件）",
+    "placeholders": {
+      "title": { "content": "$1", "example": "曲名" },
+      "count": { "content": "$2", "example": "3" }
+    }
+  },
+  "save": {
+    "message": "保存"
+  }
+}

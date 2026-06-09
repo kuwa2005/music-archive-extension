@@ -1,7 +1,9 @@
 import * as esbuild from 'esbuild';
-import { mkdirSync } from 'fs';
+import { cpSync, mkdirSync, rmSync } from 'fs';
 
 mkdirSync('dist', { recursive: true });
+rmSync('_locales', { recursive: true, force: true });
+cpSync('src/_locales', '_locales', { recursive: true });
 
 const shared = {
   bundle: true,

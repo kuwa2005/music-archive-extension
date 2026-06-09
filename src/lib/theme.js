@@ -1,3 +1,5 @@
+import { t } from './i18n.js';
+
 const THEME_KEY = 'theme';
 
 /** @returns {'dark' | 'light'} */
@@ -27,8 +29,8 @@ export function updateThemeToggleUi(theme) {
   const btn = document.getElementById('theme-toggle');
   if (!btn) return;
   const isLight = theme === 'light';
-  btn.setAttribute('aria-label', isLight ? 'ダークモードに切替（月）' : 'ライトモードに切替（太陽）');
-  btn.setAttribute('title', isLight ? 'ダークモード' : 'ライトモード');
+  btn.setAttribute('aria-label', isLight ? t('themeToggleDark') : t('themeToggleLight'));
+  btn.setAttribute('title', isLight ? t('themeDark') : t('themeLight'));
 }
 
 /** @returns {Promise<'dark' | 'light'>} */

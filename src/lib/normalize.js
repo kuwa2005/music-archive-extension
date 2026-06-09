@@ -76,6 +76,20 @@ export function looksLikeLyrics(text) {
 }
 
 /**
+ * Suno RSC / 埋め込み JSON が歌詞として誤抽出されたときの判定。
+ * @param {string} text
+ * @returns {boolean}
+ */
+export function looksLikeEmbeddedPageState(text) {
+  if (!text || text.length < 80) return false;
+  return (
+    /\\"play_count\\"|"play_count"\s*:|entity_type\\":\\"|"entity_type"\s*:|self\.__next_f\.push/.test(
+      text,
+    ) || (text.includes('created_at') && text.includes('audio_url'))
+  );
+}
+
+/**
  * @param {string} fullText
  * @param {string} [titleHint]
  * @returns {{ title: string, lyrics: string, musicalStyle: string }}

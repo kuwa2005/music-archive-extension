@@ -467,3 +467,15 @@
 - コミット履歴: `git log --oneline`
 - 配布 zip: `npm run package` → `release/music-archive-extension-v*.zip`
 - 現行バージョン: `manifest.json` の `version`（1.2.1）
+
+---
+
+## （ドキュメント整備）— 2026-06-09 — プライバシーポリシー・docs 索引・CWS メモ更新
+
+| 項目 | 内容 |
+|------|------|
+| **種別** | documentation |
+| **概要** | 英日プライバシーポリシー、\docs/README.md\、CWS 懸念事項を手動保存方針に合わせて更新 |
+| **GitHub Issues** | #3 進捗コメント、#9 クローズ、#17 optional_host_permissions 新規 |
+| **関連ファイル** | \docs/privacy-policy.md\, \docs/privacy-policy.ja.md\, \docs/README.md\, \docs/ChromeWebStoreへ公開する際の懸念事項.md\, \README.md\ |
+

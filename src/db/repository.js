@@ -4,6 +4,9 @@ import { isSunoEntrySource } from '../lib/suno-sources.js';
 import { enrichSearchFields } from '../lib/normalize.js';
 import { splitSearchQuery, entryMatchesSearchTokens } from '../lib/similarity.js';
 import { filterEntriesForCleanup } from '../lib/cleanup-filter.js';
+import { pickSunoCreatedAt } from '../lib/suno-created-at.js';
+
+export { coerceSunoCreatedAt, pickSunoCreatedAt } from '../lib/suno-created-at.js';
 
 /**
  * @returns {string}
@@ -14,7 +17,7 @@ export function newId() {
 
 /**
  * @param {Partial<import('../types.js').Entry>} data
- * @returns {Promise<import('../types.js').Entry>}
+ * @returns {Promise<{ entry: import('../types.js').Entry, isNew: boolean }>}
  */
 export async function upsertEntry(data) {
   const now = new Date().toISOString();
@@ -48,16 +51,14 @@ export async function upsertEntry(data) {
     imageUrl: data.imageUrl ?? existing?.imageUrl,
     protected: data.protected ?? existing?.protected ?? false,
     capturedAt: existing?.capturedAt || data.capturedAt || now,
-    sunoCreatedAt:
-      typeof data.sunoCreatedAt === 'string' && data.sunoCreatedAt
-        ? data.sunoCreatedAt
-        : existing?.sunoCreatedAt,
+    sunoCreatedAt: pickSunoCreatedAt(data, existing),
     updatedAt: now,
     ...searchFields,
   };
 
+  const isNew = !existing;
   await db.entries.put(entry);
-  return entry;
+  return { entry, isNew };
 }
 
 /**
@@ -167,6 +168,50 @@ export async function getLinkedEntries(entryId) {
  */
 export async function deleteLink(linkId) {
   await db.links.delete(linkId);
+}
+
+/**
+ * @param {string} entryId
+ * @returns {Promise<import('../types.js').Link[]>}
+ */
+export async function getLinksForEntry(entryId) {
+  const links = await db.links.toArray();
+  return links.filter((l) => l.chatgptEntryId === entryId || l.sunoEntryId === entryId);
+}
+
+/**
+ * 指定 ID 集合の**両端**がその集合に含まれるリンクのみ（選択間のリンク）。
+ * @param {string[]} entryIds
+ * @returns {Promise<import('../types.js').Link[]>}
+ */
+export async function getLinksBetweenEntryIds(entryIds) {
+  const idSet = new Set(entryIds);
+  const links = await db.links.toArray();
+  return links.filter((l) => idSet.has(l.chatgptEntryId) && idSet.has(l.sunoEntryId));
+}
+
+/**
+ * @param {string[]} entryIds
+ * @returns {Promise<number>}
+ */
+export async function deleteLinksBetweenEntryIds(entryIds) {
+  const toDelete = await getLinksBetweenEntryIds(entryIds);
+  for (const link of toDelete) {
+    await db.links.delete(link.id);
+  }
+  return toDelete.length;
+}
+
+/**
+ * @param {string} entryId
+ * @returns {Promise<number>}
+ */
+export async function deleteAllLinksForEntry(entryId) {
+  const links = await getLinksForEntry(entryId);
+  for (const link of links) {
+    await db.links.delete(link.id);
+  }
+  return links.length;
 }
 
 /**
@@ -280,6 +325,11 @@ export async function deleteEntry(id) {
 export async function getLinkedEntryIds() {
   const links = await db.links.toArray();
   return new Set([...links.map((l) => l.chatgptEntryId), ...links.map((l) => l.sunoEntryId)]);
+}
+
+/** @returns {Promise<import('../types.js').Link[]>} */
+export function getAllLinks() {
+  return db.links.toArray();
 }
 
 /**

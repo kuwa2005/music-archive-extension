@@ -1,5 +1,7 @@
 /** Suno DOM セレクタ集（suno-download-cli / SunoExtension 由来） */
 
+import { maDebug } from './debug.js';
+
 export const TITLE_SELECTORS = ['h1', '[data-testid="song-title"]', '.song-title'];
 
 export const LYRICS_SELECTORS = [
@@ -405,26 +407,36 @@ export function extractDateFromScope(root) {
 export function extractCreatedAtFromPageState(doc, clipId) {
   try {
     const view = doc.defaultView;
+    const nextFLen = view?.__next_f && Array.isArray(view.__next_f) ? view.__next_f.length : 0;
+    maDebug('extractCreatedAtFromPageState:start', { clipId, nextFLen });
     if (view?.__next_f && Array.isArray(view.__next_f)) {
       const chunkText = view.__next_f
         .map((chunk) => (typeof chunk === 'string' ? chunk : JSON.stringify(chunk)))
         .join('\n');
       const fromNextF = extractCreatedAtFromText(chunkText, clipId);
+      maDebug('extractCreatedAtFromPageState:__next_f', { fromNextF });
       if (fromNextF) return fromNextF;
     }
-  } catch {
-    /* ignore */
+  } catch (err) {
+    maDebug('extractCreatedAtFromPageState:__next_f error', err);
   }
 
+  let scriptHits = 0;
   for (const script of doc.querySelectorAll('script')) {
     const text = script.textContent || '';
     if (!text.includes('created_at') && !text.includes('__next_f')) continue;
+    scriptHits += 1;
     const fromScript = extractCreatedAtFromText(text, clipId);
-    if (fromScript) return fromScript;
+    if (fromScript) {
+      maDebug('extractCreatedAtFromPageState:script', { scriptHits, fromScript });
+      return fromScript;
+    }
   }
 
   const html = doc.documentElement?.innerHTML || doc.body?.innerHTML || '';
-  return extractCreatedAtFromText(html, clipId);
+  const fromHtml = extractCreatedAtFromText(html, clipId);
+  maDebug('extractCreatedAtFromPageState:html', { scriptHits, fromHtml, htmlLen: html.length });
+  return fromHtml;
 }
 
 /**
@@ -435,11 +447,15 @@ export function extractCreatedAtFromPageState(doc, clipId) {
  * @returns {string|null} ISO 8601
  */
 export function extractSunoCreatedAtFromDom(doc, clipId) {
+  maDebug('extractSunoCreatedAtFromDom:start', { clipId, url: doc.defaultView?.location?.href });
   // バックグラウンドタブでは DOM 日時が描画されないことがあるため、
   // clipId がある場合は RSC / script 埋め込みを先に試す。
   if (clipId) {
     const fromState = extractCreatedAtFromPageState(doc, clipId);
-    if (fromState) return fromState;
+    if (fromState) {
+      maDebug('extractSunoCreatedAtFromDom:fromState', fromState);
+      return fromState;
+    }
   }
 
   const scopes = [
@@ -455,10 +471,29 @@ export function extractSunoCreatedAtFromDom(doc, clipId) {
     if (seen.has(scope)) continue;
     seen.add(scope);
     const found = extractDateFromScope(scope);
-    if (found) return found;
+    if (found) {
+      maDebug('extractSunoCreatedAtFromDom:scope', {
+        scopeTag: scope.tagName,
+        scopeTestId: scope.getAttribute?.('data-testid'),
+        found,
+      });
+      return found;
+    }
   }
 
-  return extractCreatedAtFromPageState(doc, clipId);
+  const selectorProbe = SUNO_JA_DATE_SELECTORS.slice(0, 4).map((sel) => ({
+    sel,
+    count: doc.querySelectorAll(sel).length,
+    sample: [...doc.querySelectorAll(sel)].slice(0, 2).map((el) => ({
+      text: (el.textContent || '').trim().slice(0, 40),
+      title: el.getAttribute('title') || '',
+    })),
+  }));
+  maDebug('extractSunoCreatedAtFromDom:selectorProbe', selectorProbe);
+
+  const fallback = extractCreatedAtFromPageState(doc, clipId);
+  maDebug('extractSunoCreatedAtFromDom:fallbackState', fallback);
+  return fallback;
 }
 
 /**
@@ -470,11 +505,19 @@ export function extractSunoCreatedAtFromDom(doc, clipId) {
  */
 export async function waitForSunoCreatedAt(doc, clipId, options = {}) {
   const { attempts = 30, intervalMs = 150 } = options;
+  maDebug('waitForSunoCreatedAt:start', { clipId, attempts, intervalMs });
   for (let i = 0; i < attempts; i += 1) {
     const found = extractSunoCreatedAtFromDom(doc, clipId);
-    if (found) return found;
+    if (found) {
+      maDebug('waitForSunoCreatedAt:found', { attempt: i + 1, found });
+      return found;
+    }
+    if (i === 0 || i === attempts - 1) {
+      maDebug('waitForSunoCreatedAt:poll', { attempt: i + 1, found: null });
+    }
     if (i < attempts - 1) await sleep(intervalMs);
   }
+  maDebug('waitForSunoCreatedAt:timeout', { attempts });
   return null;
 }
 
@@ -486,13 +529,23 @@ export async function waitForSunoCreatedAt(doc, clipId, options = {}) {
 export async function fetchSunoClipCreatedAt(clipId) {
   if (!clipId) return null;
   try {
-    const res = await fetch(`${SUNO_CLIP_API}/${clipId}`);
-    if (!res.ok) return null;
+    const url = `${SUNO_CLIP_API}/${clipId}`;
+    const res = await fetch(url);
+    if (!res.ok) {
+      maDebug('fetchSunoClipCreatedAt:httpError', { clipId, status: res.status, url });
+      return null;
+    }
     const data = await res.json();
     const raw = data?.created_at;
-    if (!raw || Number.isNaN(new Date(raw).getTime())) return null;
-    return new Date(raw).toISOString();
-  } catch {
+    if (!raw || Number.isNaN(new Date(raw).getTime())) {
+      maDebug('fetchSunoClipCreatedAt:invalidBody', { clipId, raw });
+      return null;
+    }
+    const iso = new Date(raw).toISOString();
+    maDebug('fetchSunoClipCreatedAt:ok', { clipId, iso });
+    return iso;
+  } catch (err) {
+    maDebug('fetchSunoClipCreatedAt:error', { clipId, err: String(err) });
     return null;
   }
 }
@@ -558,9 +611,132 @@ export function extractStyleFromRoot(root) {
 
 /**
  * @param {Document} doc
+ * @returns {boolean}
+ */
+export function hasLyricsTab(doc) {
+  const buttons = doc.querySelectorAll('[role="tab"], button');
+  for (const btn of buttons) {
+    const label = (btn.textContent || btn.getAttribute('aria-label') || '').trim();
+    if (LYRICS_TAB_NAMES.some((re) => re.test(label))) return true;
+  }
+  return false;
+}
+
+/**
+ * RSC / script 埋め込みから clip のメタデータを抽出（インスト曲向け）。
+ * @param {Document} doc
+ * @param {string} [clipId]
+ * @returns {{ makeInstrumental: boolean, styleTags: string, prompt: string }}
+ */
+/**
+ * RSC 内の clipId 参照は複数あり得る。メタデータを含む塊を優先する。
+ * @param {string} text
+ * @param {string} [clipId]
+ * @returns {string}
+ */
+function pickClipMetadataRegion(text, clipId) {
+  if (!text) return '';
+  if (!clipId || !text.includes(clipId)) return text;
+
+  /** @type {number[]} */
+  const indices = [];
+  let pos = text.indexOf(clipId);
+  while (pos !== -1 && indices.length < 24) {
+    indices.push(pos);
+    pos = text.indexOf(clipId, pos + clipId.length);
+  }
+
+  const sliceAround = (idx) => text.slice(Math.max(0, idx - 2500), idx + 3500);
+  const instrumentalRe = /"make_instrumental"\s*:\s*true|\\"make_instrumental\\":true/;
+
+  for (let i = indices.length - 1; i >= 0; i -= 1) {
+    const candidate = sliceAround(indices[i]);
+    if (instrumentalRe.test(candidate)) return candidate;
+  }
+
+  const tagsRe = /display_tags|"tags"|\\"tags\\"|\\\\"tags\\\\"/;
+  for (let i = indices.length - 1; i >= 0; i -= 1) {
+    const candidate = sliceAround(indices[i]);
+    if (tagsRe.test(candidate)) return candidate;
+  }
+
+  return text;
+}
+
+export function extractClipFieldsFromPageState(doc, clipId) {
+  const empty = { makeInstrumental: false, styleTags: '', prompt: '' };
+  try {
+    let text = '';
+    const view = doc.defaultView;
+    if (view?.__next_f && Array.isArray(view.__next_f)) {
+      text = view.__next_f
+        .map((chunk) => (typeof chunk === 'string' ? chunk : JSON.stringify(chunk)))
+        .join('\n');
+    }
+    if (!text) {
+      for (const script of doc.querySelectorAll('script')) {
+        const chunk = script.textContent || '';
+        if (chunk.includes('make_instrumental') || (clipId && chunk.includes(clipId))) {
+          text += `\n${chunk}`;
+        }
+      }
+    }
+    if (!text) text = doc.documentElement?.innerHTML || doc.body?.innerHTML || '';
+    if (!text) return empty;
+
+    const region = pickClipMetadataRegion(text, clipId);
+
+    const instrumentalRe = /"make_instrumental"\s*:\s*true|\\"make_instrumental\\":true/;
+    const makeInstrumental = instrumentalRe.test(region) || instrumentalRe.test(text);
+
+    const displayTags =
+      region.match(/\\\\"display_tags\\\\":\\\\"([^"\\]+)\\\\"/) ||
+      region.match(/\\"display_tags\\":\\"([^"\\]+)\\"/) ||
+      region.match(/"display_tags"\s*:\s*"([^"]+)"/);
+    const metaTags =
+      region.match(/\\\\"tags\\\\":\\\\"((?:[^"\\]|\\.)*)\\\\"/) ||
+      region.match(/\\"tags\\":\\"([^"\\]+)\\"/) ||
+      region.match(/"tags"\s*:\s*"((?:[^"\\]|\\.)*)"/);
+    const promptMatch =
+      region.match(/\\\\"prompt\\\\":\\\\"((?:[^"\\]|\\.)*)\\\\"/) ||
+      region.match(/\\"prompt\\":\\"([^"\\]*)\\"/) ||
+      region.match(/"prompt"\s*:\s*"((?:[^"\\]|\\.)*)"/);
+
+    const decode = (s) =>
+      (s || '')
+        .replace(/\\\\"/g, '"')
+        .replace(/\\"/g, '"')
+        .replace(/\\n/g, '\n')
+        .trim();
+
+    return {
+      makeInstrumental,
+      styleTags: decode(displayTags?.[1] || metaTags?.[1] || ''),
+      prompt: decode(promptMatch?.[1] || ''),
+    };
+  } catch {
+    return empty;
+  }
+}
+
+/**
+ * @param {string} title
+ * @returns {string}
+ */
+export function normalizeSunoSongTitle(title) {
+  return (title || '')
+    .replace(/^★\s*/, '')
+    .replace(/\s*\|\s*Suno\s*$/i, '')
+    .replace(/\s+by\s+[^|]+$/i, '')
+    .trim();
+}
+
+/**
+ * @param {Document} doc
  * @returns {Promise<void>}
  */
 export async function clickLyricsTab(doc) {
+  if (!hasLyricsTab(doc)) return;
   const buttons = doc.querySelectorAll('[role="tab"], button');
   for (const btn of buttons) {
     const label = (btn.textContent || btn.getAttribute('aria-label') || '').trim();

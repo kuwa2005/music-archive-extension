@@ -17,7 +17,7 @@ const version = manifest.version;
 const zipName = `music-archive-extension-v${version}.zip`;
 const zipPath = join(outDir, zipName);
 
-for (const name of ['dist', 'icons', 'ui', 'manifest.json']) {
+for (const name of ['dist', 'icons', 'ui', '_locales', 'manifest.json']) {
   cpSync(join(root, name), join(stageDir, name), { recursive: true });
 }
 

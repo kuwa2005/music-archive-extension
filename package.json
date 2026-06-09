@@ -8,7 +8,9 @@
     "watch": "node build.mjs --watch",
     "icons": "node scripts/generate-icons.mjs",
     "package": "node scripts/package-extension.mjs",
-    "test:suno-date": "node scripts/_tmp-parse-song-date.mjs && node scripts/test-suno-date.mjs"
+    "test:suno-date": "node scripts/_tmp-parse-song-date.mjs && node scripts/test-suno-date.mjs && node scripts/test-save-suno-created-at.mjs",
+    "test:similarity-tree": "node scripts/test-similarity-tree.mjs",
+    "test:instrumental": "node scripts/test-instrumental-capture.mjs"
   },
   "devDependencies": {
     "esbuild": "^0.25.0",

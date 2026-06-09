@@ -1,4 +1,5 @@
 import { initMessageDialog, showAlert, showConfirm } from '../lib/dialog.js';
+import { t } from '../lib/i18n.js';
 
 const STYLE_LINK_ID = 'ma-extension-dialog-styles';
 const BODY_OPEN_CLASS = 'ma-message-dialog-open';
@@ -41,15 +42,15 @@ function injectDialogMarkup() {
     <div class="modal-backdrop" data-message-dialog-backdrop></div>
     <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="message-dialog-title">
       <header class="modal-header">
-        <h2 id="message-dialog-title">お知らせ</h2>
-        <button id="message-dialog-close-btn" type="button" class="icon-btn" aria-label="閉じる">×</button>
+        <h2 id="message-dialog-title">${t('dialogNotice')}</h2>
+        <button id="message-dialog-close-btn" type="button" class="icon-btn" aria-label="${t('close')}">×</button>
       </header>
       <div class="modal-body">
         <p id="message-dialog-text" class="message-dialog-text"></p>
       </div>
       <footer class="modal-footer">
-        <button id="message-dialog-ok" type="button">OK</button>
-        <button id="message-dialog-cancel" type="button" class="secondary" hidden>キャンセル</button>
+        <button id="message-dialog-ok" type="button">${t('ok')}</button>
+        <button id="message-dialog-cancel" type="button" class="secondary" hidden>${t('cancel')}</button>
       </footer>
     </div>
   `;

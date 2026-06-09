@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="ja" data-theme="dark">
+<html lang="en" data-theme="dark" data-i18n-doc-title="dashboardDocTitle">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>楽曲制作アーカイブ — 検索</title>
+  <title>Music Production Archive — Search</title>
   <link rel="stylesheet" href="dashboard.css">
   <link rel="stylesheet" href="../shared/theme.css">
   <link rel="stylesheet" href="../shared/modal.css">
@@ -13,8 +13,8 @@
   <header class="topbar">
     <div>
       <div class="title-row">
-        <h1>楽曲制作アーカイブ</h1>
-        <button type="button" id="theme-toggle" class="theme-toggle" aria-label="ライトモードに切替（太陽）" title="ライトモード">
+        <h1 data-i18n="extName">Music Production Archive</h1>
+        <button type="button" id="theme-toggle" class="theme-toggle" data-i18n-aria-label="themeToggleLight" data-i18n-title="themeLight" aria-label="Switch to light mode" title="Light mode">
           <svg class="theme-icon theme-icon-sun" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
             <circle cx="12" cy="12" r="4"/>
             <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
@@ -24,27 +24,27 @@
           </svg>
         </button>
       </div>
-      <p>Suno・主要AI（ChatGPT / Claude / Gemini 等）の歌詞・曲情報を横断検索</p>
+      <p data-i18n="dashboardSubtitle">Cross-search lyrics and song info from Suno and major AI</p>
     </div>
     <div class="topbar-actions">
-      <button id="open-manual-link-btn" type="button" class="secondary">手動リンク追加</button>
-      <button id="open-settings-btn" type="button" class="secondary">設定</button>
+      <button id="open-manual-link-btn" type="button" class="secondary" data-i18n="manualLinkAdd">Add manual link</button>
+      <button id="open-settings-btn" type="button" class="secondary" data-i18n="settings">Settings</button>
     </div>
   </header>
 
   <main class="layout">
     <section class="results-panel">
       <section class="search-panel">
-        <input id="search-input" type="search" placeholder="歌詞の一部、タイトル、AI名、プロンプト…" autofocus>
+        <input id="search-input" type="search" data-i18n-placeholder="searchPlaceholder" placeholder="Lyrics snippet, title…" autofocus>
         <div class="filters">
           <select id="filter-source">
-            <option value="">すべてのソース</option>
-            <optgroup label="Suno">
-              <option value="suno_song">曲</option>
-              <option value="suno_workspace">ワークスペース</option>
-              <option value="suno_list">プレイリスト等</option>
+            <option value="" data-i18n="filterAllSources">All sources</option>
+            <optgroup data-i18n-label="filterGroupSuno" label="Suno">
+              <option value="suno_song" data-i18n="sourceSunoSong">Suno song</option>
+              <option value="suno_workspace" data-i18n="sourceSunoWorkspace">Workspace</option>
+              <option value="suno_list" data-i18n="sourceSunoList">Playlist / list</option>
             </optgroup>
-            <optgroup label="AI チャット">
+            <optgroup data-i18n-label="filterGroupAi" label="AI chat">
               <option value="chatgpt">ChatGPT</option>
               <option value="claude">Claude</option>
               <option value="gemini">Gemini</option>
@@ -53,12 +53,53 @@
               <option value="poe">Poe</option>
             </optgroup>
           </select>
-          <input id="filter-gpt" type="text" placeholder="AI名 / GPT名フィルタ">
-          <label><input id="filter-linked" type="checkbox"> リンク済みのみ</label>
+          <input id="filter-gpt" type="text" data-i18n-placeholder="filterGptPlaceholder" placeholder="AI name filter">
+          <label><input id="filter-linked" type="checkbox"> <span data-i18n="filterLinkedOnly">Linked only</span></label>
         </div>
       </section>
       <div class="results-body">
-        <h2>検索結果 <span id="result-count"></span></h2>
+        <div class="results-toolbar">
+          <div id="view-mode-switcher" class="view-mode-switcher" role="group" data-i18n-aria-label="viewModeSwitcherLabel" aria-label="Result view mode">
+            <button type="button" class="view-mode-btn active" data-view-mode="cards" aria-pressed="true" data-i18n-title="viewModeCards" data-i18n-aria-label="viewModeCards" title="Cards" aria-label="Cards">
+              <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+                <rect x="3" y="3" width="8" height="8" rx="1.5"/>
+                <rect x="13" y="3" width="8" height="8" rx="1.5"/>
+                <rect x="3" y="13" width="8" height="8" rx="1.5"/>
+                <rect x="13" y="13" width="8" height="8" rx="1.5"/>
+              </svg>
+            </button>
+            <button type="button" class="view-mode-btn" data-view-mode="compact" aria-pressed="false" data-i18n-title="viewModeCompact" data-i18n-aria-label="viewModeCompact" title="Compact" aria-label="Compact">
+              <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+                <rect x="4" y="4" width="16" height="5" rx="1"/>
+                <rect x="4" y="10.5" width="16" height="5" rx="1"/>
+                <rect x="4" y="17" width="16" height="3" rx="1"/>
+              </svg>
+            </button>
+            <button type="button" class="view-mode-btn" data-view-mode="list" aria-pressed="false" data-i18n-title="viewModeList" data-i18n-aria-label="viewModeList" title="List" aria-label="List">
+              <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+                <line x1="4" y1="6" x2="20" y2="6"/>
+                <line x1="4" y1="12" x2="20" y2="12"/>
+                <line x1="4" y1="18" x2="20" y2="18"/>
+              </svg>
+            </button>
+            <button type="button" class="view-mode-btn" data-view-mode="tree-links" aria-pressed="false" data-i18n-title="viewModeTreeLinks" data-i18n-aria-label="viewModeTreeLinks" title="Tree (links)" aria-label="Tree (links)">
+              <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+                <circle cx="5" cy="6" r="2" fill="currentColor" stroke="none"/>
+                <circle cx="5" cy="18" r="2" fill="currentColor" stroke="none"/>
+                <circle cx="19" cy="18" r="2" fill="currentColor" stroke="none"/>
+                <path d="M5 8v8M5 16h12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                <path d="M15 18h2.5a2.5 2.5 0 0 0 0-5H17" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+            </button>
+          </div>
+          <h2><span data-i18n="searchResults">Search results</span> <span id="result-count"></span></h2>
+        </div>
+        <div id="multi-select-bar" class="multi-select-bar" hidden>
+          <span id="multi-select-count" class="multi-select-count"></span>
+          <span class="multi-select-hint" data-i18n="multiSelectHint">Right-click to link or unlink</span>
+          <button type="button" id="clear-selection-btn" class="secondary multi-select-clear-btn" data-i18n="clearSelection">Clear selection</button>
+        </div>
+        <div id="link-action-status" class="link-action-status" role="status" aria-live="polite" hidden></div>
         <ul id="result-list"></ul>
       </div>
     </section>
@@ -67,12 +108,13 @@
       class="layout-resizer"
       role="separator"
       aria-orientation="vertical"
-      aria-label="検索結果と詳細の幅を調整"
+      data-i18n-aria-label="layoutResizerLabel"
+      aria-label="Resize panels"
       tabindex="0"
     ></div>
     <aside class="detail-panel">
-      <h2>詳細</h2>
-      <div id="detail-empty">左の結果を選択してください</div>
+      <h2 data-i18n="detail">Details</h2>
+      <div id="detail-empty" data-i18n="selectFromResults">Select an item on the left</div>
       <div id="detail-content" hidden>
         <div class="detail-header">
           <div class="detail-head">
@@ -83,8 +125,10 @@
                 id="detail-protect-btn"
                 class="protect-btn"
                 aria-pressed="false"
-                aria-label="プロテクト（一括削除から除外）"
-                title="プロテクト（一括削除から除外）"
+                data-i18n-aria-label="protectEnable"
+                data-i18n-title="protectEnable"
+                aria-label="Protect"
+                title="Protect"
               >
                 <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
                   <path class="key-body" d="M7 11V8a5 5 0 0 1 10 0v3"/>
@@ -96,8 +140,10 @@
                 type="button"
                 id="delete-entry-btn"
                 class="delete-btn"
-                aria-label="削除"
-                title="このエントリを削除"
+                data-i18n-aria-label="deleteEntry"
+                data-i18n-title="deleteEntryTitle"
+                aria-label="Delete"
+                title="Delete this entry"
               >
                 <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
                   <path d="M3 6h18"/>
@@ -112,11 +158,11 @@
           <p class="meta" id="detail-meta"></p>
           <div class="detail-linked" id="detail-linked">
             <div class="linked-row" id="linked-chatgpt-row" hidden>
-              <span class="linked-label">関連 AI チャット</span>
+              <span class="linked-label" data-i18n="relatedAiChat">Related AI chats</span>
               <ul id="linked-chatgpt" class="linked-chips"></ul>
             </div>
             <div class="linked-row" id="linked-suno-row" hidden>
-              <span class="linked-label">関連 Suno</span>
+              <span class="linked-label" data-i18n="relatedSuno">Related Suno</span>
               <ul id="linked-suno" class="linked-chips"></ul>
             </div>
           </div>
@@ -132,78 +178,78 @@
     <div class="modal-backdrop" data-close-settings></div>
     <div class="modal-panel modal-panel-wide" role="dialog" aria-modal="true" aria-labelledby="settings-dialog-title">
       <header class="modal-header">
-        <h2 id="settings-dialog-title">設定</h2>
-        <button id="settings-close-btn" type="button" class="icon-btn" aria-label="閉じる">×</button>
+        <h2 id="settings-dialog-title" data-i18n="settings">Settings</h2>
+        <button id="settings-close-btn" type="button" class="icon-btn" data-i18n-aria-label="close" aria-label="Close">×</button>
       </header>
-      <nav class="settings-tabs" role="tablist" aria-label="設定カテゴリ">
-        <button type="button" class="settings-tab active" role="tab" id="settings-tab-auto-link" data-settings-tab="auto-link" aria-selected="true" aria-controls="settings-panel-auto-link">自動リンク</button>
-        <button type="button" class="settings-tab" role="tab" id="settings-tab-data" data-settings-tab="data-management" aria-selected="false" aria-controls="settings-panel-data">データ管理</button>
-        <button type="button" class="settings-tab" role="tab" id="settings-tab-cleanup" data-settings-tab="data-cleanup" aria-selected="false" aria-controls="settings-panel-cleanup">データ整理</button>
+      <nav class="settings-tabs" role="tablist" data-i18n-aria-label="settings" aria-label="Settings">
+        <button type="button" class="settings-tab active" role="tab" id="settings-tab-auto-link" data-settings-tab="auto-link" aria-selected="true" aria-controls="settings-panel-auto-link" data-i18n="settingsTabAutoLink">Auto-link</button>
+        <button type="button" class="settings-tab" role="tab" id="settings-tab-data" data-settings-tab="data-management" aria-selected="false" aria-controls="settings-panel-data" data-i18n="settingsTabData">Data management</button>
+        <button type="button" class="settings-tab" role="tab" id="settings-tab-cleanup" data-settings-tab="data-cleanup" aria-selected="false" aria-controls="settings-panel-cleanup" data-i18n="settingsTabCleanup">Data cleanup</button>
       </nav>
       <div class="modal-body">
         <div id="settings-panel-auto-link" class="settings-panel" role="tabpanel" aria-labelledby="settings-tab-auto-link">
-          <p class="settings-panel-desc">Suno 曲と AI チャットの歌詞・タイトル類似度で関連付けます。</p>
-          <label class="settings-field">自動リンク閾値
+          <p class="settings-panel-desc" data-i18n="settingsAutoLinkDesc">Link Suno songs and AI chats when lyrics or titles are similar.</p>
+          <label class="settings-field"><span data-i18n="settingsAutoLinkThreshold">Auto-link threshold</span>
             <input id="setting-threshold" type="number" min="0.5" max="1" step="0.05">
           </label>
-          <label class="settings-field">リンク対象日数
+          <label class="settings-field"><span data-i18n="settingsAutoLinkWindow">Link window (days)</span>
             <input id="setting-window" type="number" min="1" max="365">
           </label>
         </div>
 
         <div id="settings-panel-data" class="settings-panel" role="tabpanel" aria-labelledby="settings-tab-data" hidden>
-          <p class="settings-panel-desc">アーカイブデータのバックアップと復元。JSON 形式でエクスポート / インポートします。</p>
+          <p class="settings-panel-desc" data-i18n="settingsDataDesc">Back up and restore archive data as JSON.</p>
           <fieldset class="import-mode-fieldset">
-            <legend>インポート種別</legend>
+            <legend data-i18n="importModeLegend">Import mode</legend>
             <label class="settings-check">
               <input type="radio" name="import-mode" id="import-mode-append" value="append" checked>
-              インポート（追加）— 既存データに上書き・追加
+              <span data-i18n="importModeAppend">Import (append)</span>
             </label>
             <label class="settings-check settings-check-danger">
               <input type="radio" name="import-mode" id="import-mode-replace" value="replace_except_protected">
-              インポート（全件クリアして追加）— プロテクト中のみ残してから取り込み
+              <span data-i18n="importModeReplace">Import (replace)</span>
             </label>
           </fieldset>
           <div class="settings-data-actions">
-            <button id="export-btn" type="button">エクスポート</button>
+            <button id="export-btn" type="button" data-i18n="export">Export</button>
             <label class="file-btn secondary">
-              JSON を選択してインポート
+              <span data-i18n="importChooseFile">Choose JSON to import</span>
               <input id="import-file" type="file" accept="application/json,.json" hidden>
             </label>
           </div>
         </div>
 
         <div id="settings-panel-cleanup" class="settings-panel" role="tabpanel" aria-labelledby="settings-tab-cleanup" hidden>
-          <p class="settings-panel-desc">条件に合うデータを一括削除します。プロテクト中のデータは既定では除外されます。</p>
+          <p class="settings-panel-desc" data-i18n="settingsCleanupDesc">Bulk-delete entries matching criteria.</p>
 
           <fieldset class="cleanup-fieldset">
-            <legend>クイック整理</legend>
+            <legend data-i18n="cleanupQuickLegend">Quick cleanup</legend>
             <div class="cleanup-preset-row">
               <label class="settings-check cleanup-preset-check">
                 <input id="cleanup-preset-old" type="checkbox">
               </label>
               <label class="cleanup-days-label">
                 <input id="cleanup-older-days" type="number" min="1" max="3650" value="90" class="cleanup-inline-num">
-                <span>日より古い（左のチェックで有効）</span>
+                <span data-i18n="cleanupOlderThanSuffix">days old (enable checkbox on the left)</span>
               </label>
             </div>
-            <label class="settings-check"><input id="cleanup-preset-unlinked" type="checkbox"> リンクなし</label>
-            <label class="settings-check"><input id="cleanup-preset-empty" type="checkbox"> 歌詞・プロンプトなし</label>
-            <label class="settings-check settings-check-danger"><input id="cleanup-preset-all" type="checkbox"> 全データ</label>
+            <label class="settings-check"><input id="cleanup-preset-unlinked" type="checkbox"> <span data-i18n="cleanupPresetUnlinked">Unlinked</span></label>
+            <label class="settings-check"><input id="cleanup-preset-empty" type="checkbox"> <span data-i18n="cleanupPresetEmpty">No lyrics or prompt</span></label>
+            <label class="settings-check settings-check-danger"><input id="cleanup-preset-all" type="checkbox"> <span data-i18n="cleanupPresetAll">All data</span></label>
           </fieldset>
 
           <details class="cleanup-details">
-            <summary class="cleanup-details-summary">詳細条件</summary>
+            <summary class="cleanup-details-summary" data-i18n="cleanupDetailsSummary">Advanced filters</summary>
             <div class="cleanup-details-body">
-            <label class="settings-field">ソース
+            <label class="settings-field"><span data-i18n="cleanupSourceLabel">Source</span>
               <select id="cleanup-source">
-                <option value="">すべて</option>
-                <optgroup label="Suno">
-                  <option value="suno_song">曲</option>
-                  <option value="suno_workspace">ワークスペース</option>
-                  <option value="suno_list">プレイリスト等</option>
+                <option value="" data-i18n="cleanupAll">All</option>
+                <optgroup data-i18n-label="filterGroupSuno" label="Suno">
+                  <option value="suno_song" data-i18n="sourceSunoSong">Suno song</option>
+                  <option value="suno_workspace" data-i18n="sourceSunoWorkspace">Workspace</option>
+                  <option value="suno_list" data-i18n="sourceSunoList">Playlist / list</option>
                 </optgroup>
-                <optgroup label="AI チャット">
+                <optgroup data-i18n-label="filterGroupAi" label="AI chat">
                   <option value="chatgpt">ChatGPT</option>
                   <option value="claude">Claude</option>
                   <option value="gemini">Gemini</option>
@@ -213,50 +259,50 @@
                 </optgroup>
               </select>
             </label>
-            <label class="settings-field">リンク
+            <label class="settings-field"><span data-i18n="cleanupLinkLabel">Links</span>
               <select id="cleanup-link-status">
-                <option value="any">すべて</option>
-                <option value="unlinked">リンクなし</option>
-                <option value="linked">リンクあり</option>
+                <option value="any" data-i18n="cleanupLinkAny">Any</option>
+                <option value="unlinked" data-i18n="cleanupLinkUnlinked">Unlinked</option>
+                <option value="linked" data-i18n="cleanupLinkLinked">Linked</option>
               </select>
             </label>
-            <label class="settings-field">歌詞・プロンプト
+            <label class="settings-field"><span data-i18n="cleanupContentLabel">Lyrics / prompt</span>
               <select id="cleanup-content-status">
-                <option value="any">すべて</option>
-                <option value="empty">なし</option>
-                <option value="has_content">あり</option>
+                <option value="any" data-i18n="cleanupContentAny">Any</option>
+                <option value="empty" data-i18n="cleanupContentEmpty">Empty</option>
+                <option value="has_content" data-i18n="cleanupContentHas">Has content</option>
               </select>
             </label>
             <div class="settings-field-row">
-              <label class="settings-field">保存日（から）
+              <label class="settings-field"><span data-i18n="cleanupDateFrom">Saved from</span>
                 <input id="cleanup-date-from" type="date">
               </label>
-              <label class="settings-field">保存日（まで）
+              <label class="settings-field"><span data-i18n="cleanupDateTo">Saved until</span>
                 <input id="cleanup-date-to" type="date">
               </label>
             </div>
-            <label class="settings-field">AI名 / キーワード
-              <input id="cleanup-keyword" type="text" placeholder="タイトル・歌詞・AI名…">
+            <label class="settings-field"><span data-i18n="cleanupKeywordLabel">AI name / keyword</span>
+              <input id="cleanup-keyword" type="text" data-i18n-placeholder="cleanupKeywordPlaceholder" placeholder="Title, lyrics…">
             </label>
             <label class="settings-check settings-check-danger">
               <input id="cleanup-include-protected" type="checkbox">
-              プロテクト中のデータも削除する
+              <span data-i18n="cleanupIncludeProtected">Also delete protected entries</span>
             </label>
             </div>
           </details>
 
           <div class="cleanup-summary">
-            <p>削除対象: <strong id="cleanup-count">0</strong> 件</p>
-            <p id="cleanup-protected-note" class="cleanup-note" hidden>（プロテクト分は除外されています）</p>
+            <p><span data-i18n="cleanupDeleteTarget">Entries to delete:</span> <strong id="cleanup-count">0</strong> <span data-i18n="cleanupDeleteTargetUnit">entries</span></p>
+            <p id="cleanup-protected-note" class="cleanup-note" hidden data-i18n="cleanupNoteProtectedExcluded">(Protected entries are excluded)</p>
           </div>
           <ul id="cleanup-preview" class="cleanup-preview"></ul>
-          <p class="cleanup-hint">削除前に <button type="button" id="cleanup-goto-export" class="linkish">データ管理</button> からエクスポートすることを推奨します。</p>
-          <button id="cleanup-delete-btn" type="button" class="danger cleanup-delete-btn" disabled>この条件で削除</button>
+          <p class="cleanup-hint"><span data-i18n="cleanupHintExport">We recommend exporting from</span> <button type="button" id="cleanup-goto-export" class="linkish" data-i18n="cleanupHintExportLink">Data management</button> <span data-i18n="cleanupHintExportSuffix">before deleting.</span></p>
+          <button id="cleanup-delete-btn" type="button" class="danger cleanup-delete-btn" disabled data-i18n="cleanupDeleteBtn">Delete matching entries</button>
         </div>
       </div>
       <footer class="modal-footer">
-        <button id="save-settings-btn" type="button">保存</button>
-        <button id="settings-cancel-btn" type="button" class="secondary">閉じる</button>
+        <button id="save-settings-btn" type="button" data-i18n="save">Save</button>
+        <button id="settings-cancel-btn" type="button" class="secondary" data-i18n="close">Close</button>
       </footer>
     </div>
   </div>
@@ -265,23 +311,23 @@
     <div class="modal-backdrop" data-close-manual-link></div>
     <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="manual-link-dialog-title">
       <header class="modal-header">
-        <h2 id="manual-link-dialog-title">手動リンク追加</h2>
-        <button id="manual-link-close-btn" type="button" class="icon-btn" aria-label="閉じる">×</button>
+        <h2 id="manual-link-dialog-title" data-i18n="manualLinkTitle">Add manual link</h2>
+        <button id="manual-link-close-btn" type="button" class="icon-btn" data-i18n-aria-label="close" aria-label="Close">×</button>
       </header>
       <div class="modal-body">
-        <p class="settings-panel-desc">AI チャットと Suno 曲を選んで関連付けます。</p>
+        <p class="settings-panel-desc" data-i18n="manualLinkDesc">Choose an AI chat and a Suno entry to link.</p>
         <div class="manual-link-form">
-          <label class="settings-field">AI チャット
+          <label class="settings-field"><span data-i18n="manualLinkAiLabel">AI chat</span>
             <select id="manual-chatgpt"></select>
           </label>
-          <label class="settings-field">Suno
+          <label class="settings-field"><span data-i18n="manualLinkSunoLabel">Suno</span>
             <select id="manual-suno"></select>
           </label>
         </div>
       </div>
       <footer class="modal-footer">
-        <button id="manual-link-btn" type="button">リンク作成</button>
-        <button id="manual-link-cancel-btn" type="button" class="secondary">閉じる</button>
+        <button id="manual-link-btn" type="button" data-i18n="createLink">Create link</button>
+        <button id="manual-link-cancel-btn" type="button" class="secondary" data-i18n="close">Close</button>
       </footer>
     </div>
   </div>
@@ -290,17 +336,32 @@
     <div class="modal-backdrop" data-message-dialog-backdrop></div>
     <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="message-dialog-title">
       <header class="modal-header">
-        <h2 id="message-dialog-title">お知らせ</h2>
-        <button id="message-dialog-close-btn" type="button" class="icon-btn" aria-label="閉じる">×</button>
+        <h2 id="message-dialog-title" data-i18n="dialogNotice">Notice</h2>
+        <button id="message-dialog-close-btn" type="button" class="icon-btn" data-i18n-aria-label="close" aria-label="Close">×</button>
       </header>
       <div class="modal-body">
         <p id="message-dialog-text" class="message-dialog-text"></p>
       </div>
       <footer class="modal-footer">
-        <button id="message-dialog-ok" type="button">OK</button>
-        <button id="message-dialog-cancel" type="button" class="secondary" hidden>キャンセル</button>
+        <button id="message-dialog-ok" type="button" data-i18n="ok">OK</button>
+        <button id="message-dialog-cancel" type="button" class="secondary" hidden data-i18n="cancel">Cancel</button>
       </footer>
     </div>
+  </div>
+
+  <div id="result-context-menu" class="result-context-menu" hidden role="menu" data-i18n-aria-label="contextMenuSelected" aria-label="Selected entries">
+    <button type="button" id="context-menu-link-btn" class="result-context-menu-item" role="menuitem" data-i18n="contextMenuLink">
+      Create links
+    </button>
+    <button type="button" id="context-menu-unlink-btn" class="result-context-menu-item" role="menuitem" hidden data-i18n="contextMenuUnlink">
+      Remove links
+    </button>
+    <button type="button" id="context-menu-unlink-all-btn" class="result-context-menu-item" role="menuitem" hidden data-i18n="contextMenuUnlinkAll">
+      Remove all links
+    </button>
+    <button type="button" id="context-menu-clear-btn" class="result-context-menu-item" role="menuitem" data-i18n="clearSelection">
+      Clear selection
+    </button>
   </div>
 
   <script src="../../dist/dashboard.js"></script>

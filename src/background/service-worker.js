@@ -1,11 +1,14 @@
 import { defaultSettings } from '../types.js';
-import { upsertEntry, searchEntries, getLinkedEntries, getLinkedEntryIds, upsertLink, deleteLink, exportAll, importAll, countEntries, deleteEntry, getEntry, previewCleanup, bulkDeleteByCleanupFilters, setEntryProtected } from '../db/repository.js';
+import { upsertEntry, searchEntries, getLinkedEntries, getLinkedEntryIds, getAllLinks, upsertLink, deleteLink, deleteLinksBetweenEntryIds, deleteAllLinksForEntry, exportAll, importAll, countEntries, deleteEntry, getEntry, previewCleanup, bulkDeleteByCleanupFilters, setEntryProtected } from '../db/repository.js';
 import { autoLinkSunoEntry, autoLinkAiEntry } from './linker.js';
 import { isAiSource } from '../lib/ai-sources.js';
 import { isSunoEntrySource } from '../lib/suno-sources.js';
 import { showTabDialog } from '../lib/tab-dialog.js';
 import { detectCaptureAction } from '../lib/capture-actions.js';
 import { captureFromTab, ensureSunoCreatedAt } from '../lib/capture-tab.js';
+import { prepareSaveEntry, resolveSavePayload, unwrapCapturePayload } from '../lib/capture-payload.js';
+import { debugLog, debugWarn, debugError, debugInfo } from '../lib/debug.js';
+import { t } from '../lib/i18n.js';
 
 const SETTINGS_KEY = 'settings';
 
@@ -35,17 +38,24 @@ async function saveSettings(patch) {
 
 /**
  * @param {Partial<import('../types.js').Entry>[]} items
+ * @returns {Promise<{ count: number, isNew?: boolean }>}
  */
 async function saveEntriesWithLink(items) {
   const settings = await getSettings();
+  /** @type {boolean | undefined} */
+  let isNew;
   for (const item of items) {
-    const entry = await upsertEntry(item);
+    const { entry, isNew: itemIsNew } = await upsertEntry(item);
+    if (items.length === 1) {
+      isNew = itemIsNew;
+    }
     if (isSunoEntrySource(entry.source)) {
       await autoLinkSunoEntry(entry, settings);
     } else if (isAiSource(entry.source)) {
       await autoLinkAiEntry(entry, settings);
     }
   }
+  return { count: items.length, ...(items.length === 1 ? { isNew } : {}) };
 }
 
 /**
@@ -61,14 +71,21 @@ async function notifySaveOnTab(tabId, message) {
   chrome.notifications.create({
     type: 'basic',
     iconUrl: 'icons/icon48.png',
-    title: '楽曲制作アーカイブ',
+    title: t('extName'),
     message,
   });
 }
 
 async function saveEntryWithLink(data) {
   const settings = await getSettings();
-  const entry = await upsertEntry(data);
+  const { entry, isNew } = await upsertEntry(data);
+  debugLog('saved entry', {
+    id: entry.id,
+    source: entry.source,
+    clipId: entry.clipId,
+    sunoCreatedAt: entry.sunoCreatedAt,
+    isNew,
+  });
   let links = [];
 
   if (isSunoEntrySource(entry.source)) {
@@ -81,21 +98,55 @@ async function saveEntryWithLink(data) {
     chrome.notifications.create({
       type: 'basic',
       iconUrl: 'icons/icon48.png',
-      title: '楽曲制作アーカイブ',
-      message: `「${entry.title || '無題'}」に ${links.length} 件の関連を自動リンクしました`,
+      title: t('extName'),
+      message: t('notifyAutoLink', String(links.length), entry.title || t('untitled')),
     });
   }
 
-  return { entry, links };
+  return { entry, links, isNew };
+}
+
+/**
+ * capture 済みペイロードを ensureSunoCreatedAt → upsert する（popup / saveFromTab 共通）。
+ * @param {number|undefined} tabId
+ * @param {unknown} captured
+ * @param {{ activateTab?: boolean, notifyOnTab?: boolean }} [options]
+ */
+async function persistCapturedData(tabId, captured, request = {}, options = {}) {
+  if (Array.isArray(captured)) {
+    return saveEntriesWithLink(captured);
+  }
+
+  let data = prepareSaveEntry(captured, request);
+  if (!data || typeof data !== 'object' || Array.isArray(data)) {
+    throw new Error('invalid capture payload');
+  }
+
+  debugLog('persistCapturedData', {
+    source: data.source,
+    clipId: data.clipId,
+    sunoCreatedAt: data.sunoCreatedAt,
+    activateTab: options.activateTab,
+  });
+
+  if (tabId && data.source === 'suno_song') {
+    data = await ensureSunoCreatedAt(tabId, data, options);
+    debugLog('persistCapturedData:afterEnsure', {
+      clipId: data.clipId,
+      sunoCreatedAt: data.sunoCreatedAt,
+    });
+  }
+  return saveEntryWithLink(data);
 }
 
 /**
  * 対象タブから capture し、Suno 曲は sunoCreatedAt を補完してから保存する。
  * @param {number} tabId
- * @param {{ activateTab?: boolean }} [options] — false: ポップアップ保存向け（タブ前面化しない）
+ * @param {{ activateTab?: boolean, notifyOnTab?: boolean, sunoCreatedAt?: unknown }} [options] — activateTab false: ポップアップ保存向け（タブ前面化しない）。notifyOnTab false: 呼び出し元がダイアログ表示
  * @returns {Promise<{ entry?: import('../types.js').Entry, links?: import('../types.js').Link[], count?: number }>}
  */
 async function saveFromTab(tabId, options = {}) {
+  const shouldNotifyOnTab = options.notifyOnTab !== false;
   const tab = await chrome.tabs.get(tabId);
   const url = tab.url || '';
   const captureAction = detectCaptureAction(url);
@@ -103,21 +154,55 @@ async function saveFromTab(tabId, options = {}) {
     throw new Error('unsupported page');
   }
 
+  debugLog('saveFromTab:start', {
+    tabId,
+    url,
+    captureAction,
+    activateTab: options.activateTab === true,
+  });
+
   const response = await captureFromTab(tabId, captureAction, options);
   if (!response?.success) {
+    debugWarn('saveFromTab:captureFailed', {
+      tabId,
+      error: response?.error || 'capture failed',
+    });
     throw new Error(response?.error || 'capture failed');
   }
 
-  if (Array.isArray(response.data)) {
-    const items = response.data;
-    await saveEntriesWithLink(items);
-    await notifySaveOnTab(tabId, `${items.length} 件を保存しました`);
-    return { count: items.length };
+  const payload = unwrapCapturePayload(response);
+  if (payload == null) {
+    debugWarn('saveFromTab:emptyPayload', { tabId });
+    throw new Error('capture payload empty');
   }
 
-  const data = await ensureSunoCreatedAt(tabId, response.data, options);
-  const result = await saveEntryWithLink(data);
-  await notifySaveOnTab(tabId, '保存しました');
+  const request = { sunoCreatedAt: options.sunoCreatedAt };
+
+  if (Array.isArray(payload)) {
+    const result = await persistCapturedData(tabId, payload, request, options);
+    if (shouldNotifyOnTab) {
+      const message =
+        payload.length > 1
+          ? t('saveMultiple', String(payload.length))
+          : result.isNew
+            ? t('saveNew')
+            : t('saveOverwrite');
+      await notifySaveOnTab(tabId, message);
+    }
+    debugLog('saveFromTab:done', { tabId, count: payload.length, isNew: result.isNew });
+    return result;
+  }
+
+  const result = await persistCapturedData(tabId, payload, request, options);
+  if (shouldNotifyOnTab) {
+    await notifySaveOnTab(tabId, result.isNew ? t('saveNew') : t('saveOverwrite'));
+  }
+  debugLog('saveFromTab:done', {
+    tabId,
+    clipId: result.entry?.clipId,
+    sunoCreatedAt: result.entry?.sunoCreatedAt,
+    isNew: result.isNew,
+  });
   return result;
 }
 
@@ -139,15 +224,60 @@ async function dispatchAction(request) {
     case 'saveSettings':
       await saveSettings(request.settings || {});
       return { success: true, settings: await getSettings() };
-    case 'saveEntry':
-      return { success: true, ...(await saveEntryWithLink(request.data)) };
+    case 'saveEntry': {
+      const payload = resolveSavePayload(request);
+      if (!payload || typeof payload !== 'object') {
+        return { success: false, error: 'data required' };
+      }
+      return { success: true, ...(await saveEntryWithLink(payload)) };
+    }
+    case 'saveCapturedData': {
+      const captured = resolveSavePayload(request);
+      if (captured == null) {
+        return { success: false, error: 'captured required' };
+      }
+      const activateTab = request.activateTab === true;
+      try {
+        debugLog('saveCapturedData:start', {
+          tabId: request.tabId,
+          activateTab,
+          hasSunoCreatedAt: !!request.sunoCreatedAt,
+        });
+        const result = await persistCapturedData(request.tabId, captured, request, { activateTab });
+        debugLog('saveCapturedData:done', {
+          clipId: result.entry?.clipId,
+          sunoCreatedAt: result.entry?.sunoCreatedAt,
+          count: result.count,
+        });
+        return { success: true, ...result };
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        debugError('saveCapturedData:failed', message, err);
+        return { success: false, error: message };
+      }
+    }
     case 'saveCurrentTab': {
       if (!request.tabId) {
         return { success: false, error: 'tabId required' };
       }
       // ポップアップ経由は既定でタブ前面化しない（前面化するとポップアップが閉じ応答が届かない）
       const activateTab = request.activateTab === true;
-      return { success: true, ...(await saveFromTab(request.tabId, { activateTab })) };
+      debugLog('saveCurrentTab:start', {
+        tabId: request.tabId,
+        activateTab,
+      });
+      try {
+        const result = await saveFromTab(request.tabId, {
+          activateTab,
+          sunoCreatedAt: request.sunoCreatedAt,
+          notifyOnTab: false,
+        });
+        return { success: true, ...result };
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        debugError('saveCurrentTab:failed', { tabId: request.tabId, message }, err);
+        return { success: false, error: message };
+      }
     }
     case 'saveEntries': {
       await saveEntriesWithLink(request.data || []);
@@ -155,8 +285,8 @@ async function dispatchAction(request) {
     }
     case 'search': {
       const results = await searchEntries(request.options || {});
-      const linkedIds = [...(await getLinkedEntryIds())];
-      return { success: true, results, linkedIds };
+      const [linkedIds, links] = await Promise.all([getLinkedEntryIds(), getAllLinks()]);
+      return { success: true, results, linkedIds: [...linkedIds], links };
     }
     case 'getLinked':
       return { success: true, ...(await getLinkedEntries(request.entryId)) };
@@ -173,6 +303,18 @@ async function dispatchAction(request) {
     case 'deleteLink':
       await deleteLink(request.linkId);
       return { success: true };
+    case 'deleteLinksBetween': {
+      const entryIds = Array.isArray(request.entryIds) ? request.entryIds : [];
+      const deleted = await deleteLinksBetweenEntryIds(entryIds);
+      return { success: true, deleted };
+    }
+    case 'deleteAllLinksForEntry': {
+      if (!request.entryId) {
+        return { success: false, error: 'entryId required' };
+      }
+      const deleted = await deleteAllLinksForEntry(request.entryId);
+      return { success: true, deleted };
+    }
     case 'deleteEntry':
       await deleteEntry(request.entryId);
       return { success: true };
@@ -214,8 +356,8 @@ async function dispatchAction(request) {
 
 chrome.runtime.onInstalled.addListener((details) => {
   if (details.reason === 'update') {
-    console.info(
-      '[music-archive] extension updated to',
+    debugInfo(
+      'extension updated to',
       chrome.runtime.getManifest().version,
       '— reload open Suno/AI tabs if cleanup preview fails',
     );
@@ -223,13 +365,18 @@ chrome.runtime.onInstalled.addListener((details) => {
 
   chrome.contextMenus.create({
     id: 'save-suno-song',
-    title: 'この Suno 曲を保存',
+    title: t('ctxSaveSunoSong'),
     contexts: ['page'],
-    documentUrlPatterns: ['https://suno.com/song/*', 'https://*.suno.com/song/*'],
+    documentUrlPatterns: [
+      'https://suno.com/song/*',
+      'https://*.suno.com/song/*',
+      'https://suno.com/s/*',
+      'https://*.suno.com/s/*',
+    ],
   });
   chrome.contextMenus.create({
     id: 'save-suno-list',
-    title: 'このページの曲リストを保存',
+    title: t('ctxSaveSunoList'),
     contexts: ['page'],
     documentUrlPatterns: [
       'https://suno.com/create*',
@@ -240,7 +387,7 @@ chrome.runtime.onInstalled.addListener((details) => {
   });
   chrome.contextMenus.create({
     id: 'save-ai-chat',
-    title: 'この AI 会話を保存',
+    title: t('ctxSaveAiChat'),
     contexts: ['page'],
     documentUrlPatterns: [
       'https://chatgpt.com/*',
@@ -249,15 +396,28 @@ chrome.runtime.onInstalled.addListener((details) => {
       'https://gemini.google.com/*',
       'https://copilot.microsoft.com/*',
       'https://copilot.com/*',
-      'https://www.perplexity.ai/*',
       'https://perplexity.ai/*',
+      'https://*.perplexity.ai/*',
       'https://poe.com/*',
     ],
   });
   chrome.contextMenus.create({
     id: 'open-dashboard',
-    title: 'アーカイブを検索',
+    title: t('ctxOpenDashboard'),
     contexts: ['page'],
+    documentUrlPatterns: [
+      'https://suno.com/*',
+      'https://*.suno.com/*',
+      'https://chatgpt.com/*',
+      'https://chat.openai.com/*',
+      'https://claude.ai/*',
+      'https://gemini.google.com/*',
+      'https://copilot.microsoft.com/*',
+      'https://copilot.com/*',
+      'https://perplexity.ai/*',
+      'https://*.perplexity.ai/*',
+      'https://poe.com/*',
+    ],
   });
 });
 
@@ -275,7 +435,7 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
   try {
     await saveFromTab(tab.id);
   } catch (err) {
-    console.error(err);
+    debugError('context menu save failed', err);
   }
 });
 

@@ -1,8 +1,9 @@
 {
   "manifest_version": 3,
-  "name": "楽曲制作アーカイブ",
+  "default_locale": "en",
+  "name": "__MSG_extName__",
   "version": "1.2.3",
-  "description": "Suno・主要AI（ChatGPT/Claude/Gemini等）から曲情報・歌詞を収集し、横断検索で一元管理",
+  "description": "__MSG_extDescription__",
   "permissions": [
     "storage",
     "unlimitedStorage",
@@ -21,8 +22,8 @@
     "https://gemini.google.com/*",
     "https://copilot.microsoft.com/*",
     "https://copilot.com/*",
-    "https://www.perplexity.ai/*",
     "https://perplexity.ai/*",
+    "https://*.perplexity.ai/*",
     "https://poe.com/*"
   ],
   "background": {
@@ -34,6 +35,8 @@
       "matches": [
         "https://suno.com/song/*",
         "https://*.suno.com/song/*",
+        "https://suno.com/s/*",
+        "https://*.suno.com/s/*",
         "https://suno.com/create*",
         "https://*.suno.com/create*",
         "https://suno.com/playlist/*",
@@ -46,15 +49,20 @@
         "https://gemini.google.com/*",
         "https://copilot.microsoft.com/*",
         "https://copilot.com/*",
-        "https://www.perplexity.ai/*",
         "https://perplexity.ai/*",
+        "https://*.perplexity.ai/*",
         "https://poe.com/*"
       ],
       "js": ["dist/dialog-host.js"],
       "run_at": "document_idle"
     },
     {
-      "matches": ["https://suno.com/song/*", "https://*.suno.com/song/*"],
+      "matches": [
+        "https://suno.com/song/*",
+        "https://*.suno.com/song/*",
+        "https://suno.com/s/*",
+        "https://*.suno.com/s/*"
+      ],
       "js": ["dist/suno-song.js"],
       "run_at": "document_idle"
     },
@@ -78,8 +86,8 @@
         "https://gemini.google.com/*",
         "https://copilot.microsoft.com/*",
         "https://copilot.com/*",
-        "https://www.perplexity.ai/*",
         "https://perplexity.ai/*",
+        "https://*.perplexity.ai/*",
         "https://poe.com/*"
       ],
       "js": ["dist/ai-chat.js"],
@@ -88,7 +96,7 @@
   ],
   "action": {
     "default_popup": "ui/popup/index.html",
-    "default_title": "楽曲制作アーカイブ",
+    "default_title": "__MSG_extActionTitle__",
     "default_icon": {
       "16": "icons/icon16.png",
       "48": "icons/icon48.png",
@@ -116,8 +124,8 @@
         "https://gemini.google.com/*",
         "https://copilot.microsoft.com/*",
         "https://copilot.com/*",
-        "https://www.perplexity.ai/*",
         "https://perplexity.ai/*",
+        "https://*.perplexity.ai/*",
         "https://poe.com/*"
       ]
     }
